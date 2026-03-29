@@ -32,19 +32,7 @@ python redo_projection_cv_experiment.py \
 
 ## Current summary
 
-The updated Gaussian sweep no longer stops at `r=4`. With the extended grid through `r=64`, the covariance-rich regimes continue to improve:
-
-| Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
-| --- | ---: | --- | ---: |
-| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=64` | 0.866 |
-| Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
-| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
-
-The key qualitative change is that the two covariance-rich regimes keep gaining from larger `r`, while the tiny-gap regime remains much flatter and only marginally exceeds the KFDA baseline.
-
-## Higher-dimensional follow-up (`p=500`)
-
-To make the `r`-curves smoother in a higher original dimension, we also ran:
+The main follow-up we now highlight is the smoother high-dimensional run:
 
 - `p=500`
 - `repeats=3`
@@ -62,6 +50,16 @@ That run gives:
 The smoother high-dimensional curve is here:
 
 ![High-dimensional Gaussian sweep](outputs_d500_r32_smooth/accuracy_curves_best_kernel.png)
+
+The original baseline sweep is still kept in `outputs/`, with the broader but sparser grid `r in {1,2,3,4,8,16,32,64}`:
+
+| Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
+| --- | ---: | --- | ---: |
+| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=64` | 0.866 |
+| Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
+| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
+
+![Baseline Gaussian sweep](outputs/accuracy_curves_best_kernel.png)
 
 ## Main outputs
 

@@ -21,18 +21,7 @@ Each workspace keeps its own scripts, README, tables, and generated plots.
 
 Workspace: `simulations/redo_projection_workspace`
 
-This set of experiments studies three dense Gaussian regimes: same mean with different covariance, different mean with different covariance, and different mean with only a tiny covariance gap. The baseline sweep uses `p=20` with `r in {1,2,3,4,8,16,32,64}`, and a higher-dimensional follow-up now uses `p=500` with a denser grid up to `r=32`. The overall pattern is that covariance-rich regimes continue to benefit from larger `r`, while the tiny-gap regime remains much flatter.
-
-| Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
-| --- | ---: | --- | ---: |
-| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=64` | 0.866 |
-| Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
-| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
-
-![Gaussian KDMLP vs KFDA](simulations/redo_projection_workspace/outputs/accuracy_curves_best_kernel.png)
-
-The higher-dimensional follow-up is saved separately in `simulations/redo_projection_workspace/outputs_d500_r32_smooth`. There, the smoother `r` grid is
-`{1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32}`, and the main outcomes are:
+This set of experiments studies three dense Gaussian regimes: same mean with different covariance, different mean with different covariance, and different mean with only a tiny covariance gap. The main figure below now shows the higher-dimensional follow-up with `p=500` and a denser grid up to `r=32`; the older `p=20` sweep is kept underneath as a reference baseline. In both settings, covariance-rich regimes benefit from larger `r`, while the tiny-gap regime remains much flatter.
 
 | Regime (`p=500`) | KFDA-1D | Best KDMLP | Best KDMLP acc. |
 | --- | ---: | --- | ---: |
@@ -40,9 +29,20 @@ The higher-dimensional follow-up is saved separately in `simulations/redo_projec
 | Different mean, different covariance | 0.646 | `MY-large_mu`, `r=32` | 0.686 |
 | Different mean, tiny covariance gap | 0.663 | `MY-large_mu`, `r=1` | 0.677 |
 
-This higher-dimensional run shows a smoother trend: the covariance-only case improves steadily as `r` grows, the mixed mean/covariance case gains more gradually, and the tiny-gap regime stays nearly flat and peaks at very small `r`.
+The smoother `p=500` grid is
+`{1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32}`. This run shows a cleaner trend: the covariance-only case improves steadily as `r` grows, the mixed mean/covariance case gains more gradually, and the tiny-gap regime stays nearly flat and peaks at very small `r`.
 
 ![Gaussian KDMLP vs KFDA high-dimensional follow-up](simulations/redo_projection_workspace/outputs_d500_r32_smooth/accuracy_curves_best_kernel.png)
+
+The original baseline sweep uses `p=20` with `r in {1,2,3,4,8,16,32,64}` and gives:
+
+| Regime (`p=20`) | KFDA-1D | Best KDMLP | Best KDMLP acc. |
+| --- | ---: | --- | ---: |
+| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=64` | 0.866 |
+| Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
+| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
+
+![Gaussian KDMLP vs KFDA baseline sweep](simulations/redo_projection_workspace/outputs/accuracy_curves_best_kernel.png)
 
 ## 2. Kernel-Space Signal vs Estimation Noise
 
