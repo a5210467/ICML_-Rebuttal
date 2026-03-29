@@ -46,5 +46,5 @@ The figures below use the higher-dimensional supplementary run in `outputs_d500_
   `ref_D_sigma_feature` versus `cov_gap_error_feature`.
 - In the strong case, the best feature-space signal-to-error ratio exceeds `1`, and KDMLP improves over KFDA.
 - In the weak case, the covariance part is below the noise floor; the final accuracy can still be influenced by the mean-separation part of the method.
-- For a cleaner KFDA-favorable tiny-gap example, see `simulations/redo_projection_workspace/outputs/accuracy_summary.csv`, where the verified `diff_mean_tiny_covariance_gap` regime gives `KFDA-1D = 0.6007` and best KDMLP `= 0.5883`.
+- The companion Gaussian sweep in `simulations/redo_projection_workspace` is now extended through `r=64`. In that broader sweep, the same `diff_mean_tiny_covariance_gap` regime is still much less decisive than the covariance-rich cases: `KFDA-1D = 0.6007`, while the best KDMLP accuracy only reaches `0.6165` at `r=32`.
 - The higher-dimensional supplementary run is included in `outputs_d500_r3`, where `d=500` and `repeats=3`. In that run, the strong case again favors KDMLP (`0.579` vs `0.529` for KFDA), while the weak case still has feature-space signal below covariance error but is helped by the mean-separation component of `MY-large_mu`.

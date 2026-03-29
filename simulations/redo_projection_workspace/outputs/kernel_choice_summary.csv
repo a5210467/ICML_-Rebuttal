@@ -7,10 +7,18 @@ diff_mean_diff_covariance,MY-large_mu,1,polynomial,"polynomial(coef0=1.0, degree
 diff_mean_diff_covariance,MY-large_mu,2,linear,linear,3
 diff_mean_diff_covariance,MY-large_mu,3,linear,linear,3
 diff_mean_diff_covariance,MY-large_mu,4,linear,linear,3
+diff_mean_diff_covariance,MY-large_mu,8,linear,linear,3
+diff_mean_diff_covariance,MY-large_mu,16,linear,linear,3
+diff_mean_diff_covariance,MY-large_mu,32,linear,linear,3
+diff_mean_diff_covariance,MY-large_mu,64,linear,linear,3
 diff_mean_diff_covariance,MY-small_mu,1,linear,linear,3
 diff_mean_diff_covariance,MY-small_mu,2,linear,linear,3
 diff_mean_diff_covariance,MY-small_mu,3,linear,linear,3
 diff_mean_diff_covariance,MY-small_mu,4,linear,linear,3
+diff_mean_diff_covariance,MY-small_mu,8,linear,linear,3
+diff_mean_diff_covariance,MY-small_mu,16,linear,linear,3
+diff_mean_diff_covariance,MY-small_mu,32,linear,linear,3
+diff_mean_diff_covariance,MY-small_mu,64,linear,linear,3
 diff_mean_tiny_covariance_gap,KFDA-1D,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.039107290261478085)",1
 diff_mean_tiny_covariance_gap,KFDA-1D,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
 diff_mean_tiny_covariance_gap,KFDA-1D,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
@@ -26,6 +34,16 @@ diff_mean_tiny_covariance_gap,MY-large_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.
 diff_mean_tiny_covariance_gap,MY-large_mu,4,rbf,rbf(gamma=0.039269524345161094),1
 diff_mean_tiny_covariance_gap,MY-large_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.039107290261478085)",1
 diff_mean_tiny_covariance_gap,MY-large_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
+diff_mean_tiny_covariance_gap,MY-large_mu,8,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.039107290261478085)",1
+diff_mean_tiny_covariance_gap,MY-large_mu,8,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
+diff_mean_tiny_covariance_gap,MY-large_mu,8,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
+diff_mean_tiny_covariance_gap,MY-large_mu,16,linear,linear,1
+diff_mean_tiny_covariance_gap,MY-large_mu,16,rbf,rbf(gamma=0.039269524345161094),1
+diff_mean_tiny_covariance_gap,MY-large_mu,16,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
+diff_mean_tiny_covariance_gap,MY-large_mu,32,laplacian,laplacian(gamma=0.03954998857521292),1
+diff_mean_tiny_covariance_gap,MY-large_mu,32,linear,linear,1
+diff_mean_tiny_covariance_gap,MY-large_mu,32,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
+diff_mean_tiny_covariance_gap,MY-large_mu,64,linear,linear,3
 diff_mean_tiny_covariance_gap,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.039107290261478085)",1
 diff_mean_tiny_covariance_gap,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
 diff_mean_tiny_covariance_gap,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
@@ -38,6 +56,17 @@ diff_mean_tiny_covariance_gap,MY-small_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.
 diff_mean_tiny_covariance_gap,MY-small_mu,4,laplacian,laplacian(gamma=0.039269524345161094),1
 diff_mean_tiny_covariance_gap,MY-small_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.039107290261478085)",1
 diff_mean_tiny_covariance_gap,MY-small_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,8,sigmoid,"sigmoid(coef0=0.0, gamma=0.039107290261478085)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,8,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,8,sigmoid,"sigmoid(coef0=0.0, gamma=0.03954998857521292)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,16,rbf,rbf(gamma=0.03954998857521292),1
+diff_mean_tiny_covariance_gap,MY-small_mu,16,sigmoid,"sigmoid(coef0=0.0, gamma=0.039107290261478085)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,16,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,32,linear,linear,2
+diff_mean_tiny_covariance_gap,MY-small_mu,32,sigmoid,"sigmoid(coef0=0.0, gamma=0.039269524345161094)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,64,linear,linear,1
+diff_mean_tiny_covariance_gap,MY-small_mu,64,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.039107290261478085)",1
+diff_mean_tiny_covariance_gap,MY-small_mu,64,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.039269524345161094)",1
 same_mean_diff_covariance,KFDA-1D,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.03864312348909953)",1
 same_mean_diff_covariance,KFDA-1D,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0399566906617043)",1
 same_mean_diff_covariance,KFDA-1D,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.040549061599093245)",1
@@ -50,6 +79,10 @@ same_mean_diff_covariance,MY-large_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.0405
 same_mean_diff_covariance,MY-large_mu,4,linear,linear,1
 same_mean_diff_covariance,MY-large_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.03864312348909953)",1
 same_mean_diff_covariance,MY-large_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.0399566906617043)",1
+same_mean_diff_covariance,MY-large_mu,8,linear,linear,3
+same_mean_diff_covariance,MY-large_mu,16,linear,linear,3
+same_mean_diff_covariance,MY-large_mu,32,linear,linear,3
+same_mean_diff_covariance,MY-large_mu,64,linear,linear,3
 same_mean_diff_covariance,MY-small_mu,1,linear,linear,1
 same_mean_diff_covariance,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.03864312348909953)",1
 same_mean_diff_covariance,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0399566906617043)",1
@@ -57,3 +90,7 @@ same_mean_diff_covariance,MY-small_mu,2,linear,linear,3
 same_mean_diff_covariance,MY-small_mu,3,linear,linear,2
 same_mean_diff_covariance,MY-small_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.040549061599093245)",1
 same_mean_diff_covariance,MY-small_mu,4,linear,linear,3
+same_mean_diff_covariance,MY-small_mu,8,linear,linear,3
+same_mean_diff_covariance,MY-small_mu,16,linear,linear,3
+same_mean_diff_covariance,MY-small_mu,32,linear,linear,3
+same_mean_diff_covariance,MY-small_mu,64,linear,linear,3

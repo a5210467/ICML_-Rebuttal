@@ -21,13 +21,13 @@ Each workspace keeps its own scripts, README, tables, and generated plots.
 
 Workspace: `simulations/redo_projection_workspace`
 
-This set of experiments studies three dense Gaussian regimes: same mean with different covariance, different mean with different covariance, and different mean with only a tiny covariance gap. The main pattern is that KDMLP helps when covariance information is genuinely useful, but not when the covariance gap is weak.
+This set of experiments studies three dense Gaussian regimes: same mean with different covariance, different mean with different covariance, and different mean with only a tiny covariance gap. The KDMLP target dimension is now swept over `r in {1,2,3,4,8,16,32,64}`. The updated pattern is that covariance-rich regimes continue to benefit from larger `r`, while the tiny-gap regime remains much flatter and only marginally improves over the KFDA baseline.
 
 | Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
 | --- | ---: | --- | ---: |
-| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=4` | 0.760 |
-| Different mean, different covariance | 0.738 | `MY-large_mu`, `r=4` | 0.835 |
-| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=3` | 0.588 |
+| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=64` | 0.866 |
+| Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
+| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
 
 ![Gaussian KDMLP vs KFDA](simulations/redo_projection_workspace/outputs/accuracy_curves_best_kernel.png)
 
@@ -42,7 +42,7 @@ This workspace is a diagnostic companion to the Gaussian experiments. KDMLP is d
 | Strong kernel covariance signal (`d=500`) | 0.835 | 0.529 | 0.579 |
 | Weak kernel covariance signal (`d=500`) | 0.436 | 0.580 | 0.679 |
 
-The plots below now show the higher-dimensional supplementary run at `d=500` with `repeats=3`. In that run, the strong case still favors KDMLP (`KFDA-1D = 0.529`, best KDMLP `= 0.579`), while the weak case remains covariance-noise dominated in the feature-space diagnostic (best signal-to-noise ratio about `0.436`). The complementary KFDA-favorable result is still the verified tiny-gap regime in `simulations/redo_projection_workspace`, where the covariance difference is weak relative to estimation noise and `KFDA-1D = 0.601` while the best KDMLP accuracy is `0.588`.
+The plots below now show the higher-dimensional supplementary run at `d=500` with `repeats=3`. In that run, the strong case still favors KDMLP (`KFDA-1D = 0.529`, best KDMLP `= 0.579`), while the weak case remains covariance-noise dominated in the feature-space diagnostic (best signal-to-noise ratio about `0.436`). The complementary weak-gap Gaussian regime in `simulations/redo_projection_workspace` is still much less decisive than the covariance-rich cases: after extending the KDMLP sweep to `r=64`, the best KDMLP accuracy is only `0.617` versus `0.601` for `KFDA-1D`, so the gain is marginal rather than a strong win.
 
 ![Kernel-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs_d500_r3/feature_space_signal_vs_noise.png)
 

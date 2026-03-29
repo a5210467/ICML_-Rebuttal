@@ -32,7 +32,9 @@ STAGE1_KERNELS = [
     ("sigmoid", {"gamma": "scale", "coef0": 0.0}),
 ]
 VARIANTS = ("KFDA-1D", "MY-large_mu", "MY-small_mu")
-R_VALUES = (1, 2, 3, 4)
+# Extended sweep so the Gaussian rebuttal experiments no longer stop at r=4.
+# We use a sparse ladder to 64 to keep the nested-selection runtime manageable.
+R_VALUES = (1, 2, 3, 4, 8, 16, 32, 64)
 
 
 sns.set_theme(style="whitegrid", context="talk")
@@ -306,7 +308,7 @@ def build_regimes():
             mean1=0.55 * v_tiny,
             Sigma0=base_tiny,
             Sigma1=tiny_alt,
-            note="This is the KFDA-favorable case: the covariance gap is real but weak relative to estimation noise.",
+            note="This is the weak-gap case: the covariance gap is real but small relative to estimation noise, so gains from larger r should be interpreted cautiously.",
         ),
     ]
 
