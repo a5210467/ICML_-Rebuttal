@@ -42,6 +42,8 @@ This workspace is a diagnostic companion to the Gaussian experiments. KDMLP is d
 | Strong kernel covariance signal | 1.279 | 0.513 | 0.596 |
 | Weak kernel covariance signal | 0.447 | 0.648 | 0.683 |
 
+The strong `d=220` case gives the intended positive example: the best feature-space covariance signal-to-error ratio is above `1`, and KDMLP improves over KFDA. The complementary KFDA-favorable result is the verified tiny-gap regime in `simulations/redo_projection_workspace`, where the covariance difference is weak relative to estimation noise and `KFDA-1D = 0.601` while the best KDMLP accuracy is `0.588`.
+
 ![Kernel-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs/feature_space_signal_vs_noise.png)
 
 ## 3. Gaussian KDMLP vs SupCon

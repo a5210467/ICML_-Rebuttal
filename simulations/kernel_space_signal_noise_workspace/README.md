@@ -31,4 +31,6 @@ python kernel_space_signal_noise_demo.py
 - The weak case is a dense mean-gap / tiny-covariance-gap regime.
 - The comparison is driven by the feature-space diagnostics:
   `ref_D_sigma_feature` versus `cov_gap_error_feature`.
+- In the strong case, the best feature-space signal-to-error ratio exceeds `1`, and KDMLP improves over KFDA.
 - In the weak case, the covariance part is below the noise floor; the final accuracy can still be influenced by the mean-separation part of the method.
+- For a cleaner KFDA-favorable tiny-gap example, see `simulations/redo_projection_workspace/outputs/accuracy_summary.csv`, where the verified `diff_mean_tiny_covariance_gap` regime gives `KFDA-1D = 0.6007` and best KDMLP `= 0.5883`.
