@@ -1,0 +1,4 @@
+regime,title,dimension,mean_gap_input,cov_gap_input_fro,trace_cov0,trace_cov1,note
+same_mean_diff_covariance,"Case A: Same Mean, Different Dense Covariances",20,0.0,5.894205463541342,25.4624392445055,25.462439244505507,"Pure covariance separation with dense, non-diagonal covariances and matched trace."
+diff_mean_diff_covariance,"Case B: Different Mean, Different Dense Covariances",20,0.9000000000000001,5.7275360341928305,25.460926630750052,25.46092663075005,"Both mean and covariance differ, with the covariance gap still dense and matched in trace."
+diff_mean_tiny_covariance_gap,"Case C: Different Mean, Tiny Dense Covariance Gap",20,1.0999999999999999,0.7308708898522757,25.595236869975885,25.595236869975885,This is the KFDA-favorable case: the covariance gap is real but weak relative to estimation noise.

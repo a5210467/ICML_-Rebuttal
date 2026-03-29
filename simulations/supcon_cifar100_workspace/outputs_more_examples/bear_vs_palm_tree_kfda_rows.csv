@@ -1,0 +1,3 @@
+task,class0,class1,rep,family,r,acc,kernel
+CIFAR100: bear vs palm_tree,bear,palm_tree,0,KFDA,1,0.96875,linear
+CIFAR100: bear vs palm_tree,bear,palm_tree,1,KFDA,1,1.0,laplacian

@@ -1,0 +1,5 @@
+class0,class1,best_r,my_best_family,my_best_acc,supcon_acc,margin_vs_supcon
+lion,possum,4,MY-large_mu,0.9921875,0.9296875,0.0625
+bee,spider,64,MY-large_mu,0.8984375,0.859375,0.0390625
+bear,palm_tree,64,MY-large_mu,0.984375,0.96875,0.015625
+palm_tree,train,5,MY-large_mu,0.953125,0.9375,0.015625

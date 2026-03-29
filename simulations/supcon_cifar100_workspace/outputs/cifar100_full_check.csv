@@ -1,0 +1,3 @@
+class0,class1,ours_best_family,ours_best_acc,supcon_acc,supcon_std,kfda_acc,margin,ours_best_kernel,ours_best_r
+beaver,possum,MY-large_mu,0.875,0.8515625,0.011048543456039806,0.84375,0.0234375,rbf,3
+clock,tractor,MY-large_mu,1.0,1.0,0.0,1.0,0.0,laplacian,1

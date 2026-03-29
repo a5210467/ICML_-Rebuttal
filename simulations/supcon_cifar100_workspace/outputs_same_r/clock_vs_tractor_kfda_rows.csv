@@ -1,0 +1,3 @@
+task,class0,class1,rep,family,r,acc,kernel
+CIFAR100: clock vs tractor,clock,tractor,0,KFDA,1,1.0,linear
+CIFAR100: clock vs tractor,clock,tractor,1,KFDA,1,1.0,linear

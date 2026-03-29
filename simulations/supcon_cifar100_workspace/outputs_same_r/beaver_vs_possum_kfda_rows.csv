@@ -1,0 +1,3 @@
+task,class0,class1,rep,family,r,acc,kernel
+CIFAR100: beaver vs possum,beaver,possum,0,KFDA,1,0.84375,laplacian
+CIFAR100: beaver vs possum,beaver,possum,1,KFDA,1,0.828125,polynomial

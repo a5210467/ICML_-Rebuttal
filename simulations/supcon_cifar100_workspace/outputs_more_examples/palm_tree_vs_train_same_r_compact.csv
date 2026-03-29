@@ -1,0 +1,9 @@
+task,class0,class1,r,my_large_acc,my_small_acc,supcon_acc,my_best_acc,my_best_family,margin_vs_supcon
+CIFAR100: palm_tree vs train,palm_tree,train,1,0.9375,0.5,0.9375,0.9375,MY-large_mu,0.0
+CIFAR100: palm_tree vs train,palm_tree,train,2,0.9375,0.5,0.9375,0.9375,MY-large_mu,0.0
+CIFAR100: palm_tree vs train,palm_tree,train,3,0.9375,0.5,0.9375,0.9375,MY-large_mu,0.0
+CIFAR100: palm_tree vs train,palm_tree,train,4,0.9453125,0.5,0.9375,0.9453125,MY-large_mu,0.0078125
+CIFAR100: palm_tree vs train,palm_tree,train,5,0.953125,0.5,0.9375,0.953125,MY-large_mu,0.015625
+CIFAR100: palm_tree vs train,palm_tree,train,6,0.9453125,0.5,0.9375,0.9453125,MY-large_mu,0.0078125
+CIFAR100: palm_tree vs train,palm_tree,train,32,0.9609375,0.5,0.953125,0.9609375,MY-large_mu,0.0078125
+CIFAR100: palm_tree vs train,palm_tree,train,64,0.9453125,0.5,0.953125,0.9453125,MY-large_mu,-0.0078125

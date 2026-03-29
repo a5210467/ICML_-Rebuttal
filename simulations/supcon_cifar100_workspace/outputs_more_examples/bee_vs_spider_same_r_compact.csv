@@ -1,0 +1,9 @@
+task,class0,class1,r,my_large_acc,my_small_acc,supcon_acc,my_best_acc,my_best_family,margin_vs_supcon
+CIFAR100: bee vs spider,bee,spider,1,0.8828125,0.5,0.859375,0.8828125,MY-large_mu,0.0234375
+CIFAR100: bee vs spider,bee,spider,2,0.875,0.5,0.859375,0.875,MY-large_mu,0.015625
+CIFAR100: bee vs spider,bee,spider,3,0.890625,0.5,0.8515625,0.890625,MY-large_mu,0.0390625
+CIFAR100: bee vs spider,bee,spider,4,0.8671875,0.5,0.8515625,0.8671875,MY-large_mu,0.015625
+CIFAR100: bee vs spider,bee,spider,5,0.875,0.5,0.8515625,0.875,MY-large_mu,0.0234375
+CIFAR100: bee vs spider,bee,spider,6,0.859375,0.5,0.8515625,0.859375,MY-large_mu,0.0078125
+CIFAR100: bee vs spider,bee,spider,32,0.8984375,0.5,0.8671875,0.8984375,MY-large_mu,0.03125
+CIFAR100: bee vs spider,bee,spider,64,0.8984375,0.53125,0.859375,0.8984375,MY-large_mu,0.0390625

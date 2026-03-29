@@ -1,0 +1,7 @@
+class0,class1,ours_best_family,ours_best_acc,supcon_acc,kfda_acc,margin
+beaver,possum,MY-large_mu,0.921875,0.890625,0.953125,0.03125
+clock,tractor,MY-large_mu,0.984375,0.96875,0.984375,0.015625
+bicycle,leopard,MY-large_mu,0.984375,0.96875,0.96875,0.015625
+butterfly,oak_tree,MY-large_mu,1.0,1.0,1.0,0.0
+man,pickup_truck,MY-large_mu,1.0,1.0,1.0,0.0
+orchid,squirrel,MY-large_mu,0.9375,0.953125,0.96875,-0.015625

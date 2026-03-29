@@ -1,0 +1,10 @@
+regime,repeat,variant,r,stage1_kernel,stage1_label,test_acc,val_acc,stage2_kernel,stage2_params
+strong220,1,KFDA-1D,1,linear,linear,0.5134,0.5636363636363636,rbf,"{""C"": 2.0, ""gamma"": 0.5}"
+strong220,1,MY-large_mu,1,laplacian,laplacian(gamma=0.003645364186377925),0.5962,0.5636363636363636,rbf,"{""C"": 0.5, ""gamma"": 0.5}"
+strong220,1,MY-large_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.003645364186377925)",0.5152,0.6,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+strong220,1,MY-large_mu,3,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.003645364186377925)",0.5914,0.6363636363636364,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+strong220,1,MY-large_mu,4,laplacian,laplacian(gamma=0.003645364186377925),0.565,0.6212121212121212,poly,"{""C"": 2.0, ""coef0"": 1.0, ""degree"": 2, ""gamma"": ""scale""}"
+strong220,1,MY-small_mu,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.003645364186377925)",0.5426,0.5878787878787879,rbf,"{""C"": 1.0, ""gamma"": 0.5}"
+strong220,1,MY-small_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.003645364186377925)",0.512,0.6151515151515151,poly,"{""C"": 1.0, ""coef0"": 1.0, ""degree"": 2, ""gamma"": ""scale""}"
+strong220,1,MY-small_mu,3,linear,linear,0.5484,0.6151515151515151,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+strong220,1,MY-small_mu,4,linear,linear,0.5646,0.5848484848484848,rbf,"{""C"": 2.0, ""gamma"": ""scale""}"

@@ -1,0 +1,91 @@
+index,regime,variant,r,stage1_kernel,stage1_label,mean,std,n_repeats
+0,oldstyle_diff_mean_scale_gap,KFDA-1D,1,laplacian,laplacian(gamma=0.0029468115110298557),0.9894,,1
+1,oldstyle_diff_mean_scale_gap,KFDA-1D,1,linear,linear,0.5842,,1
+2,oldstyle_diff_mean_scale_gap,KFDA-1D,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.6564,,1
+3,oldstyle_diff_mean_scale_gap,KFDA-1D,1,rbf,rbf(gamma=0.0029468115110298557),0.9962,,1
+4,oldstyle_diff_mean_scale_gap,KFDA-1D,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.6166,,1
+5,oldstyle_diff_mean_scale_gap,MY-large_mu,1,laplacian,laplacian(gamma=0.0029468115110298557),0.7408,,1
+6,oldstyle_diff_mean_scale_gap,MY-large_mu,1,linear,linear,0.6,,1
+7,oldstyle_diff_mean_scale_gap,MY-large_mu,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.6602,,1
+8,oldstyle_diff_mean_scale_gap,MY-large_mu,1,rbf,rbf(gamma=0.0029468115110298557),0.9952,,1
+9,oldstyle_diff_mean_scale_gap,MY-large_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.644,,1
+10,oldstyle_diff_mean_scale_gap,MY-large_mu,2,laplacian,laplacian(gamma=0.0029468115110298557),0.7794,,1
+11,oldstyle_diff_mean_scale_gap,MY-large_mu,2,linear,linear,0.5878,,1
+12,oldstyle_diff_mean_scale_gap,MY-large_mu,2,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.6464,,1
+13,oldstyle_diff_mean_scale_gap,MY-large_mu,2,rbf,rbf(gamma=0.0029468115110298557),0.995,,1
+14,oldstyle_diff_mean_scale_gap,MY-large_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.6018,,1
+15,oldstyle_diff_mean_scale_gap,MY-large_mu,3,laplacian,laplacian(gamma=0.0029468115110298557),0.7642,,1
+16,oldstyle_diff_mean_scale_gap,MY-large_mu,3,linear,linear,0.6522,,1
+17,oldstyle_diff_mean_scale_gap,MY-large_mu,3,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.663,,1
+18,oldstyle_diff_mean_scale_gap,MY-large_mu,3,rbf,rbf(gamma=0.0029468115110298557),0.9946,,1
+19,oldstyle_diff_mean_scale_gap,MY-large_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.6236,,1
+20,oldstyle_diff_mean_scale_gap,MY-large_mu,4,laplacian,laplacian(gamma=0.0029468115110298557),0.7736,,1
+21,oldstyle_diff_mean_scale_gap,MY-large_mu,4,linear,linear,0.585,,1
+22,oldstyle_diff_mean_scale_gap,MY-large_mu,4,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.6528,,1
+23,oldstyle_diff_mean_scale_gap,MY-large_mu,4,rbf,rbf(gamma=0.0029468115110298557),0.9948,,1
+24,oldstyle_diff_mean_scale_gap,MY-large_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.5764,,1
+25,oldstyle_diff_mean_scale_gap,MY-small_mu,1,laplacian,laplacian(gamma=0.0029468115110298557),0.5786,,1
+26,oldstyle_diff_mean_scale_gap,MY-small_mu,1,linear,linear,0.4912,,1
+27,oldstyle_diff_mean_scale_gap,MY-small_mu,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.5286,,1
+28,oldstyle_diff_mean_scale_gap,MY-small_mu,1,rbf,rbf(gamma=0.0029468115110298557),0.6692,,1
+29,oldstyle_diff_mean_scale_gap,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.4946,,1
+30,oldstyle_diff_mean_scale_gap,MY-small_mu,2,laplacian,laplacian(gamma=0.0029468115110298557),0.6382,,1
+31,oldstyle_diff_mean_scale_gap,MY-small_mu,2,linear,linear,0.4986,,1
+32,oldstyle_diff_mean_scale_gap,MY-small_mu,2,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.5056,,1
+33,oldstyle_diff_mean_scale_gap,MY-small_mu,2,rbf,rbf(gamma=0.0029468115110298557),0.7418,,1
+34,oldstyle_diff_mean_scale_gap,MY-small_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.546,,1
+35,oldstyle_diff_mean_scale_gap,MY-small_mu,3,laplacian,laplacian(gamma=0.0029468115110298557),0.6494,,1
+36,oldstyle_diff_mean_scale_gap,MY-small_mu,3,linear,linear,0.4824,,1
+37,oldstyle_diff_mean_scale_gap,MY-small_mu,3,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.4916,,1
+38,oldstyle_diff_mean_scale_gap,MY-small_mu,3,rbf,rbf(gamma=0.0029468115110298557),0.7922,,1
+39,oldstyle_diff_mean_scale_gap,MY-small_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.4982,,1
+40,oldstyle_diff_mean_scale_gap,MY-small_mu,4,laplacian,laplacian(gamma=0.0029468115110298557),0.6684,,1
+41,oldstyle_diff_mean_scale_gap,MY-small_mu,4,linear,linear,0.5216,,1
+42,oldstyle_diff_mean_scale_gap,MY-small_mu,4,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0029468115110298557)",0.5214,,1
+43,oldstyle_diff_mean_scale_gap,MY-small_mu,4,rbf,rbf(gamma=0.0029468115110298557),0.8316,,1
+44,oldstyle_diff_mean_scale_gap,MY-small_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.0029468115110298557)",0.5348,,1
+45,oldstyle_same_mean_scale_gap,KFDA-1D,1,laplacian,laplacian(gamma=0.0026367644557403077),0.998,,1
+46,oldstyle_same_mean_scale_gap,KFDA-1D,1,linear,linear,0.5808,,1
+47,oldstyle_same_mean_scale_gap,KFDA-1D,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.6732,,1
+48,oldstyle_same_mean_scale_gap,KFDA-1D,1,rbf,rbf(gamma=0.0026367644557403077),0.9996,,1
+49,oldstyle_same_mean_scale_gap,KFDA-1D,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.6296,,1
+50,oldstyle_same_mean_scale_gap,MY-large_mu,1,laplacian,laplacian(gamma=0.0026367644557403077),0.7336,,1
+51,oldstyle_same_mean_scale_gap,MY-large_mu,1,linear,linear,0.646,,1
+52,oldstyle_same_mean_scale_gap,MY-large_mu,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.6684,,1
+53,oldstyle_same_mean_scale_gap,MY-large_mu,1,rbf,rbf(gamma=0.0026367644557403077),0.9992,,1
+54,oldstyle_same_mean_scale_gap,MY-large_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.6532,,1
+55,oldstyle_same_mean_scale_gap,MY-large_mu,2,laplacian,laplacian(gamma=0.0026367644557403077),0.826,,1
+56,oldstyle_same_mean_scale_gap,MY-large_mu,2,linear,linear,0.6292,,1
+57,oldstyle_same_mean_scale_gap,MY-large_mu,2,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.6562,,1
+58,oldstyle_same_mean_scale_gap,MY-large_mu,2,rbf,rbf(gamma=0.0026367644557403077),0.9994,,1
+59,oldstyle_same_mean_scale_gap,MY-large_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.6368,,1
+60,oldstyle_same_mean_scale_gap,MY-large_mu,3,laplacian,laplacian(gamma=0.0026367644557403077),0.818,,1
+61,oldstyle_same_mean_scale_gap,MY-large_mu,3,linear,linear,0.6676,,1
+62,oldstyle_same_mean_scale_gap,MY-large_mu,3,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.6622,,1
+63,oldstyle_same_mean_scale_gap,MY-large_mu,3,rbf,rbf(gamma=0.0026367644557403077),0.999,,1
+64,oldstyle_same_mean_scale_gap,MY-large_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.6152,,1
+65,oldstyle_same_mean_scale_gap,MY-large_mu,4,laplacian,laplacian(gamma=0.0026367644557403077),0.791,,1
+66,oldstyle_same_mean_scale_gap,MY-large_mu,4,linear,linear,0.6544,,1
+67,oldstyle_same_mean_scale_gap,MY-large_mu,4,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.6686,,1
+68,oldstyle_same_mean_scale_gap,MY-large_mu,4,rbf,rbf(gamma=0.0026367644557403077),0.9992,,1
+69,oldstyle_same_mean_scale_gap,MY-large_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.6664,,1
+70,oldstyle_same_mean_scale_gap,MY-small_mu,1,laplacian,laplacian(gamma=0.0026367644557403077),0.595,,1
+71,oldstyle_same_mean_scale_gap,MY-small_mu,1,linear,linear,0.4848,,1
+72,oldstyle_same_mean_scale_gap,MY-small_mu,1,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.4962,,1
+73,oldstyle_same_mean_scale_gap,MY-small_mu,1,rbf,rbf(gamma=0.0026367644557403077),0.6692,,1
+74,oldstyle_same_mean_scale_gap,MY-small_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.5,,1
+75,oldstyle_same_mean_scale_gap,MY-small_mu,2,laplacian,laplacian(gamma=0.0026367644557403077),0.6028,,1
+76,oldstyle_same_mean_scale_gap,MY-small_mu,2,linear,linear,0.482,,1
+77,oldstyle_same_mean_scale_gap,MY-small_mu,2,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.4884,,1
+78,oldstyle_same_mean_scale_gap,MY-small_mu,2,rbf,rbf(gamma=0.0026367644557403077),0.7612,,1
+79,oldstyle_same_mean_scale_gap,MY-small_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.486,,1
+80,oldstyle_same_mean_scale_gap,MY-small_mu,3,laplacian,laplacian(gamma=0.0026367644557403077),0.6408,,1
+81,oldstyle_same_mean_scale_gap,MY-small_mu,3,linear,linear,0.5044,,1
+82,oldstyle_same_mean_scale_gap,MY-small_mu,3,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.5034,,1
+83,oldstyle_same_mean_scale_gap,MY-small_mu,3,rbf,rbf(gamma=0.0026367644557403077),0.8232,,1
+84,oldstyle_same_mean_scale_gap,MY-small_mu,3,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.5412,,1
+85,oldstyle_same_mean_scale_gap,MY-small_mu,4,laplacian,laplacian(gamma=0.0026367644557403077),0.6852,,1
+86,oldstyle_same_mean_scale_gap,MY-small_mu,4,linear,linear,0.5208,,1
+87,oldstyle_same_mean_scale_gap,MY-small_mu,4,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0026367644557403077)",0.5084,,1
+88,oldstyle_same_mean_scale_gap,MY-small_mu,4,rbf,rbf(gamma=0.0026367644557403077),0.8532,,1
+89,oldstyle_same_mean_scale_gap,MY-small_mu,4,sigmoid,"sigmoid(coef0=0.0, gamma=0.0026367644557403077)",0.5964,,1

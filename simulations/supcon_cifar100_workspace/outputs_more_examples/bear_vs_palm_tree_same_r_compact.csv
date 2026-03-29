@@ -1,0 +1,9 @@
+task,class0,class1,r,my_large_acc,my_small_acc,supcon_acc,my_best_acc,my_best_family,margin_vs_supcon
+CIFAR100: bear vs palm_tree,bear,palm_tree,1,0.9921875,0.5,0.984375,0.9921875,MY-large_mu,0.0078125
+CIFAR100: bear vs palm_tree,bear,palm_tree,2,0.9921875,0.5,0.9921875,0.9921875,MY-large_mu,0.0
+CIFAR100: bear vs palm_tree,bear,palm_tree,3,0.9921875,0.5,0.984375,0.9921875,MY-large_mu,0.0078125
+CIFAR100: bear vs palm_tree,bear,palm_tree,4,0.9921875,0.5,0.984375,0.9921875,MY-large_mu,0.0078125
+CIFAR100: bear vs palm_tree,bear,palm_tree,5,0.9921875,0.5,0.984375,0.9921875,MY-large_mu,0.0078125
+CIFAR100: bear vs palm_tree,bear,palm_tree,6,0.984375,0.5,0.9921875,0.984375,MY-large_mu,-0.0078125
+CIFAR100: bear vs palm_tree,bear,palm_tree,32,0.984375,0.5,0.9765625,0.984375,MY-large_mu,0.0078125
+CIFAR100: bear vs palm_tree,bear,palm_tree,64,0.984375,0.5,0.96875,0.984375,MY-large_mu,0.015625

@@ -1,0 +1,17 @@
+task,class0,class1,r,my_large_acc,my_small_acc,supcon_acc,my_best_acc,my_best_family,margin_vs_supcon
+CIFAR100: beaver vs possum,beaver,possum,1,0.8984375,0.5,0.84375,0.8984375,MY-large_mu,0.0546875
+CIFAR100: beaver vs possum,beaver,possum,2,0.90625,0.5,0.84375,0.90625,MY-large_mu,0.0625
+CIFAR100: beaver vs possum,beaver,possum,3,0.90625,0.5,0.8515625,0.90625,MY-large_mu,0.0546875
+CIFAR100: beaver vs possum,beaver,possum,4,0.90625,0.5,0.859375,0.90625,MY-large_mu,0.046875
+CIFAR100: beaver vs possum,beaver,possum,5,0.90625,0.5,0.859375,0.90625,MY-large_mu,0.046875
+CIFAR100: beaver vs possum,beaver,possum,6,0.90625,0.5,0.859375,0.90625,MY-large_mu,0.046875
+CIFAR100: beaver vs possum,beaver,possum,32,0.90625,0.5,0.8671875,0.90625,MY-large_mu,0.0390625
+CIFAR100: beaver vs possum,beaver,possum,64,0.8984375,0.5,0.8359375,0.8984375,MY-large_mu,0.0625
+CIFAR100: clock vs tractor,clock,tractor,1,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,2,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,3,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,4,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,5,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,6,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,32,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+CIFAR100: clock vs tractor,clock,tractor,64,1.0,0.5,1.0,1.0,MY-large_mu,0.0

@@ -1,0 +1,10 @@
+regime,repeat,variant,r,stage1_kernel,stage1_label,test_acc,val_acc,stage2_kernel,stage2_params
+weak220,1,KFDA-1D,1,linear,linear,0.6482,0.6666666666666666,poly,"{""C"": 0.5, ""coef0"": 1.0, ""degree"": 2, ""gamma"": ""scale""}"
+weak220,1,MY-large_mu,1,sigmoid,"sigmoid(coef0=0.0, gamma=0.003611149486188753)",0.6538,0.6727272727272727,linear,"{""C"": 2.0}"
+weak220,1,MY-large_mu,2,linear,linear,0.6786,0.6575757575757576,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+weak220,1,MY-large_mu,3,linear,linear,0.5254,0.6696969696969697,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+weak220,1,MY-large_mu,4,linear,linear,0.6826,0.6484848484848484,poly,"{""C"": 2.0, ""coef0"": 1.0, ""degree"": 2, ""gamma"": ""scale""}"
+weak220,1,MY-small_mu,1,linear,linear,0.4934,0.6,rbf,"{""C"": 0.5, ""gamma"": 0.5}"
+weak220,1,MY-small_mu,2,sigmoid,"sigmoid(coef0=0.0, gamma=0.003611149486188753)",0.4916,0.5696969696969697,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+weak220,1,MY-small_mu,3,linear,linear,0.5128,0.5727272727272728,rbf,"{""C"": 0.5, ""gamma"": ""scale""}"
+weak220,1,MY-small_mu,4,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.003611149486188753)",0.5234,0.5363636363636364,rbf,"{""C"": 0.5, ""gamma"": 0.5}"
