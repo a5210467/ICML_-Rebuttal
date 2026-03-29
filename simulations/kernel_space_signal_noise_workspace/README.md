@@ -24,6 +24,10 @@ python kernel_space_signal_noise_demo.py
 - `outputs/feature_space_signal_vs_noise.png`
 - `outputs/projection_views.png`
 
+![Feature-space signal vs noise](outputs/feature_space_signal_vs_noise.png)
+
+![Accuracy curves](outputs/accuracy_curves.png)
+
 ## Interpretation
 
 - Both cases are rebuilt at `d=220`.

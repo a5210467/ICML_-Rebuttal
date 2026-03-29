@@ -46,6 +46,10 @@ The strong `d=220` case gives the intended positive example: the best feature-sp
 
 ![Kernel-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs/feature_space_signal_vs_noise.png)
 
+The corresponding accuracy curves make the same point from the prediction side: when the covariance signal is stable, KDMLP can improve over KFDA, while in the weak-signal setting the behavior is much less robust and should be interpreted together with the covariance-error diagnostic above.
+
+![Kernel-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/accuracy_curves.png)
+
 ## 3. Gaussian KDMLP vs SupCon
 
 Workspace: `simulations/supcon_gaussian_workspace`
