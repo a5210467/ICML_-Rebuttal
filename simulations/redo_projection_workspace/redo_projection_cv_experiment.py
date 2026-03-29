@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import math
 from dataclasses import dataclass
@@ -39,6 +40,19 @@ R_VALUES = (1, 2, 3, 4, 8, 16, 32, 64)
 
 sns.set_theme(style="whitegrid", context="talk")
 np.set_printoptions(suppress=True, precision=4)
+
+
+def parse_r_values(raw: str) -> tuple[int, ...]:
+    vals = []
+    for part in raw.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        vals.append(int(part))
+    vals = sorted(set(vals))
+    if not vals:
+        raise ValueError("At least one r value must be provided.")
+    return tuple(vals)
 
 
 def gamma_scale_value(X_ref: np.ndarray) -> float:
@@ -250,9 +264,8 @@ class Regime:
     note: str
 
 
-def build_regimes():
+def build_regimes(p: int):
     rng = np.random.default_rng(20260326)
-    p = 20
 
     base_same = random_dense_spd(rng, p, eig_low=0.6, eig_high=2.2)
     base_tiny = random_dense_spd(rng, p, eig_low=0.6, eig_high=2.1)
@@ -938,7 +951,32 @@ def build_regime_table(regimes) -> pd.DataFrame:
 
 
 def main():
-    regimes = build_regimes()
+    parser = argparse.ArgumentParser(description="Gaussian KDMLP vs KFDA sweep.")
+    parser.add_argument("--dimension", type=int, default=20, help="Original Gaussian input dimension p.")
+    parser.add_argument("--repeats", type=int, default=3, help="Number of repeated train/test splits.")
+    parser.add_argument(
+        "--r-values",
+        type=str,
+        default="1,2,3,4,8,16,32,64",
+        help="Comma-separated KDMLP target dimensions.",
+    )
+    parser.add_argument(
+        "--output-subdir",
+        type=str,
+        default="outputs",
+        help="Output subdirectory under the workspace folder.",
+    )
+    parser.add_argument("--anchor-per-class", type=int, default=60, help="Number of anchors per class.")
+    parser.add_argument("--seed", type=int, default=123, help="Base random seed for repeated runs.")
+    parser.add_argument("--reg", type=float, default=1e-6, help="PSD regularization strength.")
+    args = parser.parse_args()
+
+    global OUT_DIR, R_VALUES
+    OUT_DIR = ROOT / args.output_subdir
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    R_VALUES = parse_r_values(args.r_values)
+
+    regimes = build_regimes(args.dimension)
     all_raw = []
     all_sel = []
     all_cov = []
@@ -948,7 +986,13 @@ def main():
         print("=" * 100)
         print(regime.title)
         print(regime.note)
-        df_raw, df_sel, df_cov, plot_payload = run_regime(regime, repeats=3, anchor_per_class=60, reg=1e-6, seed=123)
+        df_raw, df_sel, df_cov, plot_payload = run_regime(
+            regime,
+            repeats=args.repeats,
+            anchor_per_class=args.anchor_per_class,
+            reg=args.reg,
+            seed=args.seed,
+        )
         all_raw.append(df_raw)
         all_sel.append(df_sel)
         all_cov.append(df_cov)

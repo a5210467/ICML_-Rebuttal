@@ -8,6 +8,7 @@ This folder is a fresh rebuild of the synthetic comparison, using the style of t
 - KFDA baseline
 - original-space and feature-space covariance diagnostics
 - an extended KDMLP target-dimension sweep `r in {1,2,3,4,8,16,32,64}`
+- a higher-dimensional follow-up with configurable `p`, including a `p=500` smooth-curve run up to `r=32`
 
 ## Main script
 
@@ -17,6 +18,16 @@ Run it with:
 
 ```bash
 python redo_projection_cv_experiment.py
+```
+
+Example higher-dimensional run:
+
+```bash
+python redo_projection_cv_experiment.py \
+  --dimension 500 \
+  --repeats 3 \
+  --r-values 1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32 \
+  --output-subdir outputs_d500_r32_smooth
 ```
 
 ## Current summary
@@ -31,6 +42,27 @@ The updated Gaussian sweep no longer stops at `r=4`. With the extended grid thro
 
 The key qualitative change is that the two covariance-rich regimes keep gaining from larger `r`, while the tiny-gap regime remains much flatter and only marginally exceeds the KFDA baseline.
 
+## Higher-dimensional follow-up (`p=500`)
+
+To make the `r`-curves smoother in a higher original dimension, we also ran:
+
+- `p=500`
+- `repeats=3`
+- `r in {1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32}`
+- output folder: `outputs_d500_r32_smooth`
+
+That run gives:
+
+| Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
+| --- | ---: | --- | ---: |
+| Same mean, different covariance | 0.523 | `MY-large_mu`, `r=32` | 0.697 |
+| Different mean, different covariance | 0.646 | `MY-large_mu`, `r=32` | 0.686 |
+| Different mean, tiny covariance gap | 0.663 | `MY-large_mu`, `r=1` | 0.677 |
+
+The smoother high-dimensional curve is here:
+
+![High-dimensional Gaussian sweep](outputs_d500_r32_smooth/accuracy_curves_best_kernel.png)
+
 ## Main outputs
 
 - `outputs/accuracy_summary.csv`
@@ -39,6 +71,7 @@ The key qualitative change is that the two covariance-rich regimes keep gaining 
 - `outputs/accuracy_curves_best_kernel.png`
 - `outputs/covariance_diagnostics.png`
 - `outputs/selected_projection_views.png`
+- `outputs_d500_r32_smooth/`
 
 ## Math note
 

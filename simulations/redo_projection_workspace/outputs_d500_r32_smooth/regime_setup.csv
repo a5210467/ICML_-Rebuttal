@@ -1,0 +1,4 @@
+regime,title,dimension,mean_gap_input,cov_gap_input_fro,trace_cov0,trace_cov1,note
+same_mean_diff_covariance,"Case A: Same Mean, Different Dense Covariances",500,0.0,31.87684433229789,659.2172715808795,659.2172715808795,"Pure covariance separation with dense, non-diagonal covariances and matched trace."
+diff_mean_diff_covariance,"Case B: Different Mean, Different Dense Covariances",500,0.9,25.80722530474493,624.972097960533,624.9720979605329,"Both mean and covariance differ, with the covariance gap still dense and matched in trace."
+diff_mean_tiny_covariance_gap,"Case C: Different Mean, Tiny Dense Covariance Gap",500,1.1,3.7007693676785185,583.547844750129,583.547844750129,"This is the weak-gap case: the covariance gap is real but small relative to estimation noise, so gains from larger r should be interpreted cautiously."
