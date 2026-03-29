@@ -15,6 +15,12 @@ Run it with:
 python kernel_space_signal_noise_demo.py
 ```
 
+Example higher-dimensional run:
+
+```bash
+python kernel_space_signal_noise_demo.py --dimension 500 --repeats 3 --output-subdir outputs_d500_r3
+```
+
 ## Main outputs
 
 - `outputs/strong_bestkernel_accuracy_summary.csv`
@@ -23,6 +29,7 @@ python kernel_space_signal_noise_demo.py
 - `outputs/accuracy_curves.png`
 - `outputs/feature_space_signal_vs_noise.png`
 - `outputs/projection_views.png`
+- `outputs_d500_r3/`
 
 ![Feature-space signal vs noise](outputs/feature_space_signal_vs_noise.png)
 
@@ -38,3 +45,4 @@ python kernel_space_signal_noise_demo.py
 - In the strong case, the best feature-space signal-to-error ratio exceeds `1`, and KDMLP improves over KFDA.
 - In the weak case, the covariance part is below the noise floor; the final accuracy can still be influenced by the mean-separation part of the method.
 - For a cleaner KFDA-favorable tiny-gap example, see `simulations/redo_projection_workspace/outputs/accuracy_summary.csv`, where the verified `diff_mean_tiny_covariance_gap` regime gives `KFDA-1D = 0.6007` and best KDMLP `= 0.5883`.
+- A higher-dimensional supplementary run is included in `outputs_d500_r3`, where `d=500` and `repeats=3`. In that run, the strong case again favors KDMLP (`0.579` vs `0.529` for KFDA), while the weak case still has feature-space signal below covariance error but is helped by the mean-separation component of `MY-large_mu`.

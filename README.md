@@ -50,6 +50,8 @@ The corresponding accuracy curves make the same point from the prediction side: 
 
 ![Kernel-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/accuracy_curves.png)
 
+We also ran a higher-dimensional version at `d=500` with `repeats=3`, saved in `simulations/kernel_space_signal_noise_workspace/outputs_d500_r3`. In that run, the strong case again favored KDMLP (`KFDA-1D = 0.529`, best KDMLP `= 0.579`), and the weak case remained covariance-noise dominated in the feature-space diagnostic (best signal-to-noise ratio about `0.436`), although `MY-large_mu` still outperformed KFDA there because the mean-separation part remained helpful (`0.679` vs `0.580`).
+
 ## 3. Gaussian KDMLP vs SupCon
 
 Workspace: `simulations/supcon_gaussian_workspace`

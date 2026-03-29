@@ -19,6 +19,7 @@ The point is to show the two stories side by side with the same stage-1/stage-2
 pipeline, not to introduce another approximate implementation.
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -42,9 +43,9 @@ sns.set_theme(style="whitegrid", context="talk")
 R_VALUES = base.R_VALUES
 
 
-def build_hd220_regimes(seed: int = 20260327):
+def build_regimes(dimension: int = 220, seed: int = 20260327):
     rng = np.random.default_rng(seed)
-    p = 220
+    p = int(dimension)
 
     sigma_strong_0 = base.random_dense_spd(rng, p, eig_low=0.6, eig_high=2.2)
     sigma_weak_0 = base.random_dense_spd(rng, p, eig_low=0.6, eig_high=2.1)
@@ -58,8 +59,8 @@ def build_hd220_regimes(seed: int = 20260327):
     v = base.random_unit_vector(rng, p)
 
     strong = base.Regime(
-        name="strong220",
-        title="Strong Case: d=220, Same Mean, Different Dense Covariances",
+        name=f"strong{p}",
+        title=f"Strong Case: d={p}, Same Mean, Different Dense Covariances",
         p=p,
         n_train_per_class=660,
         n_test_per_class=2500,
@@ -71,8 +72,8 @@ def build_hd220_regimes(seed: int = 20260327):
         note="High-dimensional dense covariance difference with matched trace; no mean difference.",
     )
     weak = base.Regime(
-        name="weak220",
-        title="Weak Case: d=220, Mean Gap Plus Tiny Dense Covariance Gap",
+        name=f"weak{p}",
+        title=f"Weak Case: d={p}, Mean Gap Plus Tiny Dense Covariance Gap",
         p=p,
         n_train_per_class=660,
         n_test_per_class=2500,
@@ -86,8 +87,8 @@ def build_hd220_regimes(seed: int = 20260327):
     return strong, weak
 
 
-def run_strong_bestkernel_case(repeats: int = 1, seed: int = 123):
-    regime, _ = build_hd220_regimes()
+def run_strong_bestkernel_case(dimension: int = 220, repeats: int = 1, seed: int = 123):
+    regime, _ = build_regimes(dimension=dimension)
     df_raw, df_sel, df_cov, plot_payload = base.run_regime(
         regime,
         repeats=repeats,
@@ -103,8 +104,8 @@ def run_strong_bestkernel_case(repeats: int = 1, seed: int = 123):
     return regime, df_raw, df_sel, df_acc, df_cov, df_cov_summary, plot_payload
 
 
-def run_weak_bestkernel_case(repeats: int = 1, seed: int = 123):
-    _, regime = build_hd220_regimes()
+def run_weak_bestkernel_case(dimension: int = 220, repeats: int = 1, seed: int = 123):
+    _, regime = build_regimes(dimension=dimension)
     df_raw, df_sel, df_cov, plot_payload = base.run_regime(
         regime,
         repeats=repeats,
@@ -155,7 +156,8 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=variant)
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("Strong Case\nBest nested-selected stage-1 kernel")
+    strong_title = str(sub["regime"].iloc[0]) if "regime" in sub.columns and len(sub) else "strong"
+    ax.set_title(f"{strong_title}\nBest nested-selected stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_ylabel("test accuracy")
     ax.set_xticks(list(R_VALUES))
@@ -170,7 +172,8 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=variant)
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("Weak Case\nCovariance signal below noise floor")
+    weak_title = str(sub["regime"].iloc[0]) if "regime" in sub.columns and len(sub) else "weak"
+    ax.set_title(f"{weak_title}\nCovariance signal below noise floor")
     ax.set_xlabel("projection dimension r")
     ax.set_xticks(list(R_VALUES))
     ax.legend(frameon=True, fontsize=9)
@@ -263,9 +266,36 @@ def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_p
     return out
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Kernel-space signal vs estimation-noise demo.")
+    parser.add_argument("--dimension", type=int, default=220, help="Input-space dimension for both synthetic regimes.")
+    parser.add_argument("--repeats", type=int, default=1, help="Number of repeated outer runs.")
+    parser.add_argument("--seed", type=int, default=123, help="Random seed for repeated evaluations.")
+    parser.add_argument(
+        "--output-subdir",
+        type=str,
+        default="outputs",
+        help="Workspace-relative output folder to write CSVs and plots into.",
+    )
+    return parser.parse_args()
+
+
 def main():
-    strong_regime, df_strong_raw, df_strong_sel, df_strong_acc, df_strong_cov, df_strong_cov_summary, strong_payload = run_strong_bestkernel_case()
-    weak_regime, df_weak_raw, df_weak_sel, df_weak_acc, df_weak_cov, df_weak_cov_summary, weak_payload = run_weak_bestkernel_case()
+    args = parse_args()
+    global OUT_DIR
+    OUT_DIR = ROOT / args.output_subdir
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    strong_regime, df_strong_raw, df_strong_sel, df_strong_acc, df_strong_cov, df_strong_cov_summary, strong_payload = run_strong_bestkernel_case(
+        dimension=args.dimension,
+        repeats=args.repeats,
+        seed=args.seed,
+    )
+    weak_regime, df_weak_raw, df_weak_sel, df_weak_acc, df_weak_cov, df_weak_cov_summary, weak_payload = run_weak_bestkernel_case(
+        dimension=args.dimension,
+        repeats=args.repeats,
+        seed=args.seed,
+    )
 
     # Keep only one row per kernel after averaging repeats.
     strong_cov_export = collapse_by_kernel(df_strong_cov_summary)
@@ -315,6 +345,7 @@ def main():
     print(f"- {OUT_DIR / 'weak_bestkernel_accuracy_summary.csv'}")
     print(f"- {OUT_DIR / 'feature_space_signal_noise_summary.csv'}")
     print(f"- {OUT_DIR / 'case_setup.csv'}")
+    print(f"- dimension={args.dimension}, repeats={args.repeats}, seed={args.seed}")
     print(f"- {acc_plot}")
     print(f"- {sig_plot}")
     print(f"- {proj_plot}")
