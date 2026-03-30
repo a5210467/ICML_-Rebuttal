@@ -84,7 +84,7 @@ This case-level table makes the intended separation explicit at the feature-spac
 
 The corresponding accuracy curves now use the representative nonlinear kernel from the feature-space table (`sigmoid` in both cases). Under that nonlinear stage-1 kernel, the large-covariance case still shows a stable covariance signal and KDMLP improves over KFDA, while in the small-covariance case the behavior remains much less robust and should be interpreted together with the covariance-error diagnostic above.
 
-![Feature-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/accuracy_curves.png)
+![Feature-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/representative_kernel_accuracy_curves.png)
 
 ## 3. Gaussian KDMLP vs SupCon
 

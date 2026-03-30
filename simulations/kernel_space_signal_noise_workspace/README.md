@@ -28,6 +28,7 @@ python kernel_space_signal_noise_demo.py --dimension 500 --repeats 3 --output-su
 - `outputs/feature_space_signal_noise_summary.csv`
 - `outputs/signal_noise_case_summary.csv`
 - `outputs/accuracy_curves.png`
+- `outputs/representative_kernel_accuracy_curves.png`
 - `outputs/signal_noise_case_summary.png`
 - `outputs/feature_space_signal_vs_noise.png`
 - `outputs/projection_views.png`
@@ -44,7 +45,7 @@ The figures below use the default `d=220` run in `outputs/`, and they summarize 
 
 ![Feature-space signal vs noise](outputs/feature_space_signal_vs_noise.png)
 
-![Accuracy curves](outputs/accuracy_curves.png)
+![Accuracy curves](outputs/representative_kernel_accuracy_curves.png)
 
 ## Interpretation
 
