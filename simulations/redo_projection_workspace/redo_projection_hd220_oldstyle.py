@@ -34,6 +34,26 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 sns.set_theme(style="whitegrid", context="talk")
 
 
+def build_oldstyle_summary(df_best_summary: pd.DataFrame, df_kernel_summary: pd.DataFrame) -> str:
+    same_case = df_best_summary[df_best_summary["regime"] == "oldstyle_same_mean_scale_gap"]
+    mix_case = df_best_summary[df_best_summary["regime"] == "oldstyle_diff_mean_scale_gap"]
+    same_best = same_case[same_case["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
+    same_kfda = same_case[same_case["variant"] == "KFDA-1D"].iloc[0]
+    mix_best = mix_case[mix_case["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
+    mix_kfda = mix_case[mix_case["variant"] == "KFDA-1D"].iloc[0]
+    poly2_same = df_kernel_summary[
+        (df_kernel_summary["regime"] == "oldstyle_same_mean_scale_gap") & (df_kernel_summary["stage1_kernel"] == "polynomial")
+    ]["mean"].max()
+    return (
+        "Summary: in this old-style d=220 scale-gap setting, the task is easy enough that both KFDA and KDMLP reach very high "
+        f"accuracy, but KDMLP still has a measurable edge in the covariance-rich cases "
+        f"({same_best['mean']:.4f} vs {same_kfda['mean']:.4f} for same-mean; "
+        f"{mix_best['mean']:.4f} vs {mix_kfda['mean']:.4f} for mixed mean/covariance). "
+        f"The polynomial kernel does detect the covariance difference here as well, reaching {poly2_same:.4f} on the same-mean case, "
+        "even though another kernel is usually chosen by inner validation."
+    )
+
+
 def random_covariance_AtA(d: int, rng: np.random.Generator, scale: float = 1.0) -> np.ndarray:
     """Old notebook covariance generator: Sigma = (A^T A)/d * scale."""
     A = rng.normal(size=(d, d))
@@ -423,6 +443,11 @@ def main():
         print(df_best_summary)
         print("\nPer-kernel accuracy summary:")
         print(df_kernel_summary)
+
+    print("\nInterpretation:")
+    print(build_oldstyle_summary(df_best_summary, df_kernel_summary))
+
+    base.open_pngs(OUT_DIR)
 
 
 if __name__ == "__main__":

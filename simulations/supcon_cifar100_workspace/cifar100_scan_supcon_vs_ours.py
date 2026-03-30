@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import random
+import shutil
+import subprocess
 import sys
 from itertools import combinations
 from pathlib import Path
@@ -32,6 +34,34 @@ from compare_supcon_vs_ours import (  # type: ignore
 
 
 sns.set_theme(style="whitegrid", context="talk")
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_scan_summary(df_full: pd.DataFrame) -> str:
+    best = df_full.iloc[0]
+    wins = int((df_full["margin"] > 0).sum())
+    return (
+        f"Summary: KDMLP beats SupCon on {wins}/{len(df_full)} shortlisted CIFAR-100 pairs in the full-check run. "
+        f"The strongest example is {best['class0']} vs {best['class1']}, where KDMLP reaches {best['ours_best_acc']:.3f} "
+        f"against SupCon at {best['supcon_acc']:.3f} (margin {best['margin']:+.3f})."
+    )
 
 
 def _slug(text: str) -> str:
@@ -292,7 +322,10 @@ def main():
     make_final_plots(ns, best_exp, tag=tag)
 
     print(df_full.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_scan_summary(df_full))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

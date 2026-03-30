@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -41,6 +43,38 @@ R_VALUES = (1, 2, 3, 4, 5, 6, 32, 64)
 N_PER_CLASS = 80
 REPEATS = 2
 SUPCON_EPOCHS = 10
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_same_r_cifar_summary(df_all_compact: pd.DataFrame) -> str:
+    non_sat = df_all_compact[df_all_compact[["my_best_acc", "supcon_acc"]].max(axis=1) < 0.995].copy()
+    source = non_sat if len(non_sat) else df_all_compact
+    best = source.sort_values("margin_vs_supcon", ascending=False).iloc[0]
+    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc"]].mean()
+    top_r = mean_curve.assign(margin=mean_curve["my_best_acc"] - mean_curve["supcon_acc"]).sort_values("margin", ascending=False).iloc[0]
+    return (
+        f"Summary: the most informative same-r CIFAR-100 pair here is {best['task']}, where KDMLP reaches {best['my_best_acc']:.3f} "
+        f"against SupCon at {best['supcon_acc']:.3f} with r={int(best['r'])}. "
+        f"Averaged across the selected pairs, the largest mean same-r margin occurs at r={int(top_r['r'])} "
+        f"with KDMLP-minus-SupCon = {top_r['margin']:+.3f}."
+    )
 
 
 def _slug(text: str) -> str:
@@ -339,7 +373,10 @@ def main():
     fig.savefig(OUT / "cifar100_same_r_mean_curve.png", dpi=180)
     plt.close(fig)
 
+    print("\nInterpretation:")
+    print(build_same_r_cifar_summary(df_all_compact))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

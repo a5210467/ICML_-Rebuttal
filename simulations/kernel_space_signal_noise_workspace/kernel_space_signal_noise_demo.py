@@ -43,6 +43,28 @@ sns.set_theme(style="whitegrid", context="talk")
 R_VALUES = base.R_VALUES
 
 
+def build_terminal_summary(df_strong_acc: pd.DataFrame, df_weak_acc: pd.DataFrame, df_signal_noise: pd.DataFrame) -> str:
+    strong_best = df_strong_acc[df_strong_acc["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
+    strong_kfda = df_strong_acc[df_strong_acc["variant"] == "KFDA-1D"].iloc[0]
+    weak_best = df_weak_acc[df_weak_acc["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
+    weak_kfda = df_weak_acc[df_weak_acc["variant"] == "KFDA-1D"].iloc[0]
+    strong_ratio = float(
+        df_signal_noise[df_signal_noise["case"] == "strong_kernel_covariance_signal"]["signal_to_noise_ratio"].max()
+    )
+    weak_ratio = float(
+        df_signal_noise[df_signal_noise["case"] == "weak_kernel_covariance_signal"]["signal_to_noise_ratio"].max()
+    )
+    return (
+        "Summary: when the feature-space covariance signal is stronger relative to estimation noise, "
+        f"KDMLP improves over KFDA ({strong_best['variant']}, r={int(strong_best['r'])}, "
+        f"{strong_best['mean']:.3f} vs {strong_kfda['mean']:.3f}; best signal/error ratio {strong_ratio:.3f}). "
+        "In the weak-signal case, the covariance diagnostic stays below the noise floor "
+        f"(best ratio {weak_ratio:.3f}), so the result should be interpreted more cautiously; "
+        f"the best KDMLP run reaches {weak_best['mean']:.3f} versus {weak_kfda['mean']:.3f} for KFDA, "
+        "with the mean-separation component still contributing to performance."
+    )
+
+
 def build_regimes(dimension: int = 220, seed: int = 20260327):
     rng = np.random.default_rng(seed)
     p = int(dimension)
@@ -207,8 +229,8 @@ def plot_signal_vs_noise(strong_cov: pd.DataFrame, weak_cov: pd.DataFrame):
                     tick.set_color("#7c3aed")
                     tick.set_fontweight("bold")
 
-    one_panel(axes[0], strong_cov, "Strong case: feature covariance signal vs error")
-    one_panel(axes[1], weak_cov, "Weak case: feature covariance signal vs error")
+    one_panel(axes[0], strong_cov, "Covariance signal is strong enough")
+    one_panel(axes[1], weak_cov, "Covariance signal is small relative to noise")
 
     fig.tight_layout()
     out = OUT_DIR / "feature_space_signal_vs_noise.png"
@@ -349,6 +371,19 @@ def main():
     print(f"- {acc_plot}")
     print(f"- {sig_plot}")
     print(f"- {proj_plot}")
+
+    with pd.option_context("display.max_columns", None, "display.width", 240):
+        print("\nStrong-case accuracy summary:")
+        print(df_strong_acc)
+        print("\nWeak-case accuracy summary:")
+        print(df_weak_acc)
+        print("\nFeature-space signal vs noise summary:")
+        print(df_signal_noise)
+
+    print("\nInterpretation:")
+    print(build_terminal_summary(df_strong_acc, df_weak_acc, df_signal_noise))
+
+    base.open_pngs(OUT_DIR)
 
 
 if __name__ == "__main__":

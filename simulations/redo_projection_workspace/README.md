@@ -59,6 +59,18 @@ The original baseline sweep is still kept in `outputs/`, with the broader but sp
 | Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
 | Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
 
+## Running time
+
+The script now also records wall-clock time in `outputs/timing_summary.csv` for the baseline `p=20` sweep. The exact kernel KFDA solve is still faster, while KDMLP spends more time in the covariance-sensitive stage-1 search and in larger target dimensions.
+
+| Regime | KFDA-1D time (s) | Fastest KDMLP time (s) | Best-accuracy KDMLP acc. / time |
+| --- | ---: | ---: | --- |
+| Same mean, different covariance | 0.54 | 0.65 | 0.866 at 1.34s |
+| Different mean, different covariance | 0.37 | 0.48 | 0.910 at 1.01s |
+| Different mean, tiny covariance gap | 0.27 | 0.35 | 0.617 at 0.56s |
+
+So the practical trade-off is fairly clean in this synthetic setting: KFDA is cheaper, but KDMLP can buy a substantial accuracy gain in the covariance-rich regimes, whereas the weak-gap regime yields only a small statistical return for the extra runtime.
+
 ![Baseline Gaussian sweep](outputs/accuracy_curves_best_kernel.png)
 
 ## Main outputs

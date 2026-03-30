@@ -44,6 +44,18 @@ The original baseline sweep uses `p=20` with `r in {1,2,3,4,8,16,32,64}` and giv
 
 ![Gaussian KDMLP vs KFDA baseline sweep](simulations/redo_projection_workspace/outputs/accuracy_curves_best_kernel.png)
 
+### Running time
+
+We also record wall-clock timing for the baseline `p=20` Gaussian sweep in `simulations/redo_projection_workspace/outputs/timing_summary.csv`. In exact kernel form, `KFDA-1D` remains faster, while KDMLP trades extra wall-clock time for better accuracy in the covariance-rich regimes and only a modest gain in the tiny-gap regime.
+
+| Regime (`p=20`) | KFDA-1D time (s) | Fastest KDMLP time (s) | Best-accuracy KDMLP acc. / time |
+| --- | ---: | ---: | --- |
+| Same mean, different covariance | 0.54 | 0.65 | 0.866 at 1.34s |
+| Different mean, different covariance | 0.37 | 0.48 | 0.910 at 1.01s |
+| Different mean, tiny covariance gap | 0.27 | 0.35 | 0.617 at 0.56s |
+
+This timing pattern matches the statistical story in the plots: KDMLP pays a higher stage-1 cost because it searches over covariance-sensitive projections and larger `r`, but the extra computation is most justified in the covariance-rich regimes where the accuracy gain over KFDA is much larger.
+
 ## 2. Kernel-Space Signal vs Estimation Noise
 
 Workspace: `simulations/kernel_space_signal_noise_workspace`

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -30,6 +32,37 @@ sns.set_theme(style="whitegrid", context="talk")
 
 OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
 R_VALUES = (1, 2, 3, 4, 5, 6, 32, 64)
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_openml_same_r_summary(df_dim32_64: pd.DataFrame) -> str:
+    lines = []
+    for r in (32, 64):
+        sub = df_dim32_64[df_dim32_64["r"] == r]
+        if len(sub) == 0:
+            continue
+        wins = int((sub["my_best_acc"] > sub["supcon_acc"]).sum())
+        losses = int((sub["my_best_acc"] < sub["supcon_acc"]).sum())
+        mean_margin = float((sub["my_best_acc"] - sub["supcon_acc"]).mean())
+        lines.append(f"r={r}: KDMLP wins on {wins} datasets, loses on {losses}, mean margin {mean_margin:+.3f}")
+    return "Summary: " + "; ".join(lines) + "."
 
 
 def load_openml_namespace(path: Path) -> dict:
@@ -199,7 +232,10 @@ def run_openml_same_r():
     plt.close(fig)
 
     print(df_dim32_64.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_openml_same_r_summary(df_dim32_64))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shutil
+import subprocess
+import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -690,6 +694,7 @@ def run_regime(regime: Regime, repeats: int = 3, anchor_per_class: int = 60, reg
     raw_rows = []
     selection_rows = []
     cov_rows = []
+    timing_rows = []
     plot_payload = {}
 
     rng_ref = np.random.default_rng(seed + 9999)
@@ -733,6 +738,7 @@ def run_regime(regime: Regime, repeats: int = 3, anchor_per_class: int = 60, reg
         for variant in VARIANTS:
             dims = (1,) if variant == "KFDA-1D" else R_VALUES
             for r in dims:
+                wall_start = time.perf_counter()
                 candidates = []
                 for metric, raw_params in STAGE1_KERNELS:
                     cand = evaluate_variant_on_validation(
@@ -753,6 +759,8 @@ def run_regime(regime: Regime, repeats: int = 3, anchor_per_class: int = 60, reg
                     selection_rows.append(cand)
                     candidates.append(cand)
 
+                validation_seconds = time.perf_counter() - wall_start
+                refit_start = time.perf_counter()
                 best_cand = max(candidates, key=lambda row: row["val_acc"])
                 full = refit_variant_on_full_train(
                     variant=variant,
@@ -767,6 +775,8 @@ def run_regime(regime: Regime, repeats: int = 3, anchor_per_class: int = 60, reg
                     raw_or_norm_params=best_cand["stage1_params"],
                     reg=reg,
                 )
+                refit_seconds = time.perf_counter() - refit_start
+                total_seconds = time.perf_counter() - wall_start
                 raw_rows.append(
                     {
                         "regime": regime.name,
@@ -781,6 +791,17 @@ def run_regime(regime: Regime, repeats: int = 3, anchor_per_class: int = 60, reg
                         "stage2_params": json.dumps(full["best_svm_params"], sort_keys=True),
                     }
                 )
+                timing_rows.append(
+                    {
+                        "regime": regime.name,
+                        "repeat": rep + 1,
+                        "variant": variant,
+                        "r": int(r),
+                        "validation_seconds": validation_seconds,
+                        "refit_seconds": refit_seconds,
+                        "total_seconds": total_seconds,
+                    }
+                )
                 if rep == 0:
                     key = (variant, int(r))
                     plot_payload[key] = {
@@ -789,7 +810,7 @@ def run_regime(regime: Regime, repeats: int = 3, anchor_per_class: int = 60, reg
                         "stage1_label": full["stage1_label"],
                     }
 
-    return pd.DataFrame(raw_rows), pd.DataFrame(selection_rows), pd.DataFrame(cov_rows), plot_payload
+    return pd.DataFrame(raw_rows), pd.DataFrame(selection_rows), pd.DataFrame(cov_rows), pd.DataFrame(timing_rows), plot_payload
 
 
 def summarize_accuracy(df_raw: pd.DataFrame) -> pd.DataFrame:
@@ -830,6 +851,105 @@ def summarize_covariance(df_cov: pd.DataFrame) -> pd.DataFrame:
         "cov1_error_feature",
     ]
     return df_cov.groupby(["regime", "kernel", "kernel_label"], as_index=False)[cols].mean()
+
+
+def summarize_timing(df_time: pd.DataFrame) -> pd.DataFrame:
+    df = (
+        df_time.groupby(["regime", "variant", "r"], as_index=False)[["validation_seconds", "refit_seconds", "total_seconds"]]
+        .agg(["mean", "std", "count"])
+        .reset_index()
+    )
+    flat_cols = []
+    for col in df.columns:
+        if isinstance(col, tuple):
+            pieces = [str(part) for part in col if part not in ("", None)]
+            flat_cols.append("_".join(pieces))
+        else:
+            flat_cols.append(str(col))
+    df.columns = flat_cols
+    if "validation_seconds_count" in df.columns:
+        df = df.rename(columns={"validation_seconds_count": "n_repeats"})
+    drop_cols = [c for c in ("refit_seconds_count", "total_seconds_count") if c in df.columns]
+    if drop_cols:
+        df = df.drop(columns=drop_cols)
+
+    for col in [
+        "validation_seconds_mean",
+        "validation_seconds_std",
+        "refit_seconds_mean",
+        "refit_seconds_std",
+        "total_seconds_mean",
+        "total_seconds_std",
+    ]:
+        if col in df.columns:
+            df[col] = df[col].fillna(0.0)
+    return df
+
+
+def build_terminal_summary(df_acc: pd.DataFrame, df_regime: pd.DataFrame) -> str:
+    best_rows = {}
+    for regime in df_acc["regime"].unique():
+        sub = df_acc[df_acc["regime"] == regime]
+        kfda = sub[sub["variant"] == "KFDA-1D"].iloc[0]
+        best = sub[sub["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
+        best_rows[regime] = (kfda, best)
+
+    rich_regimes = [r for r in best_rows if r != "diff_mean_tiny_covariance_gap"]
+    rich_wins = []
+    for regime in rich_regimes:
+        kfda, best = best_rows[regime]
+        rich_wins.append(f"{best['variant']} at r={int(best['r'])} ({best['mean']:.3f} vs {kfda['mean']:.3f} for KFDA)")
+
+    weak_regime = "diff_mean_tiny_covariance_gap"
+    weak_sentence = ""
+    if weak_regime in best_rows:
+        kfda, best = best_rows[weak_regime]
+        margin = float(best["mean"] - kfda["mean"])
+        weak_sentence = (
+            f"In the weak-gap regime, the covariance difference is small relative to estimation noise, "
+            f"so the gain stays modest: the best KDMLP setting reaches {best['mean']:.3f} at r={int(best['r'])}, "
+            f"compared with {kfda['mean']:.3f} for KFDA (margin {margin:+.3f})."
+        )
+
+    return (
+        "Summary: the covariance-rich Gaussian regimes continue to benefit from larger projection dimension, "
+        + "; ".join(rich_wins)
+        + ". "
+        + weak_sentence
+    )
+
+
+def build_timing_paragraph(df_timing: pd.DataFrame) -> str:
+    lines = []
+    for regime in df_timing["regime"].unique():
+        sub = df_timing[df_timing["regime"] == regime]
+        kfda = sub[sub["variant"] == "KFDA-1D"].iloc[0]
+        best = sub[sub["variant"] != "KFDA-1D"].sort_values("total_seconds_mean").iloc[0]
+        lines.append(
+            f"{regime}: KFDA averages {kfda['total_seconds_mean']:.2f}s total, while the fastest KDMLP setting "
+            f"averages {best['total_seconds_mean']:.2f}s ({best['variant']}, r={int(best['r'])})."
+        )
+    return "Wall-clock summary: " + " ".join(lines)
+
+
+def open_pngs(out_dir: Path):
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
 
 
 def plot_accuracy_curves(regimes, df_acc: pd.DataFrame):
@@ -980,13 +1100,14 @@ def main():
     all_raw = []
     all_sel = []
     all_cov = []
+    all_time = []
     plot_payload_map = {}
 
     for regime in regimes:
         print("=" * 100)
         print(regime.title)
         print(regime.note)
-        df_raw, df_sel, df_cov, plot_payload = run_regime(
+        df_raw, df_sel, df_cov, df_time, plot_payload = run_regime(
             regime,
             repeats=args.repeats,
             anchor_per_class=args.anchor_per_class,
@@ -996,14 +1117,17 @@ def main():
         all_raw.append(df_raw)
         all_sel.append(df_sel)
         all_cov.append(df_cov)
+        all_time.append(df_time)
         plot_payload_map[regime.name] = plot_payload
 
     df_raw = pd.concat(all_raw, ignore_index=True)
     df_sel = pd.concat(all_sel, ignore_index=True)
     df_cov = pd.concat(all_cov, ignore_index=True)
+    df_time = pd.concat(all_time, ignore_index=True)
     df_acc = summarize_accuracy(df_raw)
     df_choice = summarize_kernel_choices(df_raw)
     df_cov_summary = summarize_covariance(df_cov)
+    df_time_summary = summarize_timing(df_time)
     df_regime = build_regime_table(regimes)
 
     df_raw.to_csv(OUT_DIR / "test_results.csv", index=False)
@@ -1012,6 +1136,8 @@ def main():
     df_choice.to_csv(OUT_DIR / "kernel_choice_summary.csv", index=False)
     df_cov.to_csv(OUT_DIR / "covariance_diagnostics_per_repeat.csv", index=False)
     df_cov_summary.to_csv(OUT_DIR / "covariance_diagnostics_summary.csv", index=False)
+    df_time.to_csv(OUT_DIR / "timing_per_repeat.csv", index=False)
+    df_time_summary.to_csv(OUT_DIR / "timing_summary.csv", index=False)
     df_regime.to_csv(OUT_DIR / "regime_setup.csv", index=False)
 
     acc_plot = plot_accuracy_curves(regimes, df_acc)
@@ -1024,6 +1150,7 @@ def main():
     print(f"- {OUT_DIR / 'accuracy_summary.csv'}")
     print(f"- {OUT_DIR / 'kernel_choice_summary.csv'}")
     print(f"- {OUT_DIR / 'covariance_diagnostics_summary.csv'}")
+    print(f"- {OUT_DIR / 'timing_summary.csv'}")
     print(f"- {OUT_DIR / 'regime_setup.csv'}")
     print(f"- {acc_plot}")
     print(f"- {cov_plot}")
@@ -1038,6 +1165,14 @@ def main():
         print(df_choice)
         print("\nCovariance diagnostics summary:")
         print(df_cov_summary)
+        print("\nTiming summary:")
+        print(df_time_summary)
+
+    print("\nInterpretation:")
+    print(build_terminal_summary(df_acc, df_regime))
+    print(build_timing_paragraph(df_time_summary))
+
+    open_pngs(OUT_DIR)
 
 
 if __name__ == "__main__":

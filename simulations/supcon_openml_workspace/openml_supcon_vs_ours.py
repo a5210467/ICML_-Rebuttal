@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -24,6 +26,37 @@ sns.set_theme(style="whitegrid", context="talk")
 
 
 OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_openml_summary(df_summary: pd.DataFrame) -> str:
+    wins = int((df_summary["margin_my_minus_supcon"] > 0).sum())
+    ties = int((df_summary["margin_my_minus_supcon"].abs() < 1e-12).sum())
+    losses = int((df_summary["margin_my_minus_supcon"] < 0).sum())
+    best = df_summary.iloc[0]
+    worst = df_summary.iloc[-1]
+    return (
+        f"Summary: KDMLP beats SupCon on {wins} OpenML datasets, ties on {ties}, and trails on {losses}. "
+        f"The largest positive margin is on {best['dataset']} ({best['margin_my_minus_supcon']:+.3f}), "
+        f"while the hardest dataset for KDMLP in this scan is {worst['dataset']} ({worst['margin_my_minus_supcon']:+.3f})."
+    )
 
 
 def load_openml_namespace(path: Path) -> dict:
@@ -175,7 +208,10 @@ def run_openml_experiment():
     plt.close(fig)
 
     print(df_summary.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_openml_summary(df_summary))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

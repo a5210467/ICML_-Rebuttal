@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -21,6 +23,43 @@ import redo_projection_cv_experiment as base  # type: ignore
 
 
 sns.set_theme(style="whitegrid", context="talk")
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_gaussian_summary(df_summary: pd.DataFrame) -> str:
+    wins = 0
+    regime_sentences = []
+    for regime in df_summary["regime"].unique():
+        sub = df_summary[df_summary["regime"] == regime]
+        sup = sub[sub["method"] == "SupCon-feature"].iloc[0]
+        my_best = sub[sub["method"].isin(["MY-large_mu", "MY-small_mu"])].sort_values("acc_mean", ascending=False).iloc[0]
+        wins += int(float(my_best["acc_mean"]) > float(sup["acc_mean"]))
+        regime_sentences.append(
+            f"{regime}: best KDMLP {my_best['acc_mean']:.3f} ({my_best['method']}, r={int(my_best['r'])}) "
+            f"vs SupCon {sup['acc_mean']:.3f}"
+        )
+    return (
+        f"Summary: KDMLP beats the dimension-unmatched SupCon baseline on {wins}/{df_summary['regime'].nunique()} Gaussian regimes. "
+        + "; ".join(regime_sentences)
+        + "."
+    )
 
 
 def run_gaussian_experiment():
@@ -190,7 +229,10 @@ def run_gaussian_experiment():
     plt.close(fig)
 
     print(df_summary.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_gaussian_summary(df_summary))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -28,6 +30,43 @@ import redo_projection_cv_experiment as base  # type: ignore
 
 
 sns.set_theme(style="whitegrid", context="talk")
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_same_r_summary(acc_summary: pd.DataFrame, df_match: pd.DataFrame) -> str:
+    my_best = (
+        acc_summary[acc_summary["method"].isin(["MY-large_mu", "MY-small_mu"])]
+        .groupby("r", as_index=False)["acc_mean"]
+        .max()
+        .rename(columns={"acc_mean": "my_best_acc"})
+    )
+    sup = acc_summary[acc_summary["method"] == "SupCon"][["r", "acc_mean"]].rename(columns={"acc_mean": "supcon_acc"})
+    merged = my_best.merge(sup, on="r", how="inner")
+    best_margin_row = merged.assign(margin=merged["my_best_acc"] - merged["supcon_acc"]).sort_values("margin", ascending=False).iloc[0]
+    closest = df_match.sort_values("abs_acc_gap").iloc[0]
+    return (
+        "Summary: under the same-r protocol, KDMLP stays ahead of the compressed SupCon baseline across the tested dimensions, "
+        f"with its largest margin {best_margin_row['margin']:+.3f} at r={int(best_margin_row['r'])}. "
+        f"The closest SupCon match occurs when KDMLP uses r={int(closest['my_r'])}, where the nearest SupCon dimension in the same grid "
+        f"is r={int(closest['closest_supcon_r'])} but still trails by {closest['abs_acc_gap']:.3f}."
+    )
 
 
 def random_covariance_AtA(d: int, rng: np.random.Generator, scale: float) -> np.ndarray:
@@ -292,7 +331,10 @@ def run_case():
     print(cov_summary.to_string(index=False))
     print()
     print(df_match.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_same_r_summary(acc_summary, df_match))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
+import subprocess
+import sys
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,6 +20,35 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 
 sns.set_theme(style="whitegrid", context="talk")
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_more_examples_summary(df_summary: pd.DataFrame) -> str:
+    best = df_summary.iloc[0]
+    mean_margin = float(df_summary["margin_vs_supcon"].mean())
+    return (
+        f"Summary: broadening the CIFAR-100 search surfaces additional nontrivial wins for KDMLP. "
+        f"The best shortlist example is {best['class0']} vs {best['class1']}, where KDMLP reaches {best['my_best_acc']:.3f} "
+        f"against SupCon at {best['supcon_acc']:.3f} with r={int(best['best_r'])}; "
+        f"the mean shortlist margin is {mean_margin:+.3f}."
+    )
 
 
 def choose_shortlist(df_scan: pd.DataFrame, k: int = 4) -> list[tuple[str, str]]:
@@ -170,7 +202,10 @@ def main():
     print(df_scan.head(10).to_string(index=False))
     print("\nSame-r shortlist summary:")
     print(df_summary.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_more_examples_summary(df_summary))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":

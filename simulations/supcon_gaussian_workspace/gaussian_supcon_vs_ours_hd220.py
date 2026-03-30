@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -21,6 +23,40 @@ import redo_projection_cv_experiment as base  # type: ignore
 
 
 sns.set_theme(style="whitegrid", context="talk")
+
+
+def open_png_outputs(out_dir: Path) -> None:
+    pngs = sorted(out_dir.glob("*.png"))
+    if not pngs:
+        return
+    if sys.platform == "darwin":
+        opener = ["open"]
+    else:
+        cmd = shutil.which("xdg-open")
+        if cmd is None:
+            return
+        opener = [cmd]
+    for png in pngs:
+        try:
+            subprocess.run(opener + [str(png)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError:
+            return
+
+
+def build_hd220_summary(df: pd.DataFrame) -> str:
+    my = df[df["method"] == "MY-large_mu"].sort_values("acc_mean", ascending=False).iloc[0]
+    sup = df[df["method"] == "SupCon-feature"].sort_values("acc_mean", ascending=False).iloc[0]
+    mean_margin = float(
+        (
+            df[df["method"] == "MY-large_mu"].sort_values("case")["acc_mean"].to_numpy()
+            - df[df["method"] == "SupCon-feature"].sort_values("case")["acc_mean"].to_numpy()
+        ).mean()
+    )
+    return (
+        "Summary: in the stronger d=220 Gaussian settings, KDMLP remains comfortably ahead of SupCon. "
+        f"The best KDMLP run reaches {my['acc_mean']:.4f} on {my['case']}, while the best SupCon run reaches {sup['acc_mean']:.4f}; "
+        f"the average KDMLP-minus-SupCon margin across the three cases is {mean_margin:+.4f}."
+    )
 
 
 def random_covariance_AtA(d: int, rng: np.random.Generator, scale: float) -> np.ndarray:
@@ -154,7 +190,10 @@ def run_hd220_experiment():
     plt.close(fig)
 
     print(df.to_string(index=False))
+    print("\nInterpretation:")
+    print(build_hd220_summary(df))
     print(f"\nSaved outputs to {OUT}")
+    open_png_outputs(OUT)
 
 
 if __name__ == "__main__":
