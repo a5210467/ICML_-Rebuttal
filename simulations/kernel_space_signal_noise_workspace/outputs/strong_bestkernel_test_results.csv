@@ -1,10 +1,10 @@
 regime,repeat,variant,r,stage1_kernel,stage1_label,test_acc,val_acc,stage2_kernel,stage2_params
-largecov220,1,KFDA-1D,1,linear,linear,0.781,0.5183333333333333,rbf,{}
-largecov220,1,MY-large_mu,1,linear,linear,0.5082,0.58,rbf,{}
-largecov220,1,MY-large_mu,2,linear,linear,0.7108,0.7533333333333333,poly,{}
-largecov220,1,MY-large_mu,3,linear,linear,0.8464,0.775,rbf,{}
-largecov220,1,MY-large_mu,4,linear,linear,0.8632,0.895,rbf,{}
+largecov220,1,KFDA-1D,1,rbf,rbf(gamma=0.0021108915424718176),0.8738,0.9033333333333333,linear,{}
+largecov220,1,MY-large_mu,1,rbf,rbf(gamma=0.0021108915424718176),0.791,0.7666666666666667,rbf,{}
+largecov220,1,MY-large_mu,2,rbf,rbf(gamma=0.0021108915424718176),0.7844,0.8233333333333334,rbf,{}
+largecov220,1,MY-large_mu,3,rbf,rbf(gamma=0.0021108915424718176),0.841,0.865,poly,{}
+largecov220,1,MY-large_mu,4,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0021108915424718176)",0.8776,0.9316666666666666,poly,{}
 largecov220,1,MY-small_mu,1,linear,linear,0.698,0.7316666666666667,rbf,{}
-largecov220,1,MY-small_mu,2,linear,linear,0.8312,0.82,poly,{}
-largecov220,1,MY-small_mu,3,linear,linear,0.898,0.8616666666666667,poly,{}
-largecov220,1,MY-small_mu,4,linear,linear,0.8952,0.9166666666666666,rbf,{}
+largecov220,1,MY-small_mu,2,rbf,rbf(gamma=0.0021108915424718176),0.7974,0.8466666666666667,rbf,{}
+largecov220,1,MY-small_mu,3,polynomial,"polynomial(coef0=1.0, degree=2, gamma=0.0021108915424718176)",0.9184,0.9,poly,{}
+largecov220,1,MY-small_mu,4,rbf,rbf(gamma=0.0021108915424718176),0.8956,0.93,rbf,{}

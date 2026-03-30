@@ -3,19 +3,21 @@ from __future__ import annotations
 """
 Feature-space signal-vs-noise demo.
 
-This workspace intentionally fixes the stage-1 kernel to linear and then studies
-two high-dimensional regimes:
+This workspace studies two high-dimensional Gaussian regimes using the full
+stage-1 kernel menu:
 
 1. Large covariance case:
-   same mean / different covariance, with the true covariance difference larger
-   than its estimation error.
+   same mean / different covariance, tuned so that some nonlinear kernels have
+   a true feature-space covariance difference that is clearly larger than the
+   corresponding estimation error.
 
 2. Small covariance case:
-   mean gap / small covariance gap, with the true covariance difference smaller
-   than its estimation error.
+   mean gap / small covariance gap, where the feature-space covariance
+   difference stays below the estimation-noise floor across kernels.
 
-The point is to present one clean signal-vs-error comparison without mixing
-multiple kernels inside the same explanation.
+The point is to show a clean feature-space story: we evaluate all stage-1
+kernels, then summarize each case by the kernel that gives the strongest
+feature covariance signal-to-error ratio.
 """
 
 import argparse
@@ -40,25 +42,28 @@ import redo_projection_cv_experiment as base  # noqa: E402
 sns.set_theme(style="whitegrid", context="talk")
 
 R_VALUES = (1, 2, 3, 4)
-LINEAR_KERNEL = "linear"
-LINEAR_PARAMS: dict = {}
 
 
-def build_terminal_summary(df_strong_acc: pd.DataFrame, df_weak_acc: pd.DataFrame, df_signal_noise: pd.DataFrame) -> str:
+def build_terminal_summary(
+    df_strong_acc: pd.DataFrame,
+    df_weak_acc: pd.DataFrame,
+    df_case_summary: pd.DataFrame,
+) -> str:
     strong_best = df_strong_acc[df_strong_acc["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
     strong_kfda = df_strong_acc[df_strong_acc["variant"] == "KFDA-1D"].iloc[0]
     weak_best = df_weak_acc[df_weak_acc["variant"] != "KFDA-1D"].sort_values("mean", ascending=False).iloc[0]
     weak_kfda = df_weak_acc[df_weak_acc["variant"] == "KFDA-1D"].iloc[0]
-    strong_ratio = float(df_signal_noise[df_signal_noise["case"] == "strong_feature_covariance_signal"]["signal_to_noise_ratio"].iloc[0])
-    weak_ratio = float(df_signal_noise[df_signal_noise["case"] == "weak_feature_covariance_signal"]["signal_to_noise_ratio"].iloc[0])
+    row_a = df_case_summary[df_case_summary["label"] == "A"].iloc[0]
+    row_b = df_case_summary[df_case_summary["label"] == "B"].iloc[0]
     return (
-        "Summary (linear stage-1 kernel only): in the large covariance case, the true feature covariance difference is larger than "
-        f"its estimation error (ratio {strong_ratio:.3f}), and KDMLP improves over KFDA "
+        "Summary: in the large covariance case, the representative kernel "
+        f"({row_a['representative_kernel']}) has a true feature covariance difference larger than its estimation "
+        f"error (ratio {row_a['signal_to_noise_ratio']:.3f}), and KDMLP improves over KFDA "
         f"({strong_best['mean']:.3f} vs {strong_kfda['mean']:.3f}). "
-        "In the small covariance case, the true feature covariance difference is smaller than its estimation error "
-        f"(ratio {weak_ratio:.3f}), so the covariance part is below the noise floor; "
-        f"the best KDMLP run reaches {weak_best['mean']:.3f} versus {weak_kfda['mean']:.3f} for KFDA, "
-        "which should be read as a joint mean/covariance effect rather than as a pure covariance win."
+        "In the small covariance case, even the best feature-space signal/error ratio stays below 1 "
+        f"({row_b['representative_kernel']}, ratio {row_b['signal_to_noise_ratio']:.3f}), so the covariance part "
+        f"is below the noise floor; the best KDMLP run reaches {weak_best['mean']:.3f} versus {weak_kfda['mean']:.3f} "
+        "for KFDA and should be interpreted more cautiously."
     )
 
 
@@ -66,18 +71,18 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
     rng = np.random.default_rng(seed)
     p = int(dimension)
 
-    sigma_strong_0 = base.random_dense_spd(rng, p, eig_low=0.5, eig_high=5.5)
-    sigma_weak_0 = base.random_dense_spd(rng, p, eig_low=0.6, eig_high=2.1)
+    sigma_large_0 = base.random_dense_spd(rng, p, eig_low=0.5, eig_high=5.5)
+    sigma_small_0 = base.random_dense_spd(rng, p, eig_low=0.6, eig_high=2.1)
 
-    strong_T = base.dense_congruence_transform(rng, p, strength=4.5)
-    weak_T = base.dense_congruence_transform(rng, p, strength=0.12)
+    large_T = base.dense_congruence_transform(rng, p, strength=4.5)
+    small_T = base.dense_congruence_transform(rng, p, strength=0.12)
 
-    sigma_strong_1 = base.matched_trace_congruence(sigma_strong_0, strong_T)
-    sigma_weak_1 = base.matched_trace_congruence(sigma_weak_0, weak_T)
+    sigma_large_1 = base.matched_trace_congruence(sigma_large_0, large_T)
+    sigma_small_1 = base.matched_trace_congruence(sigma_small_0, small_T)
 
     v = base.random_unit_vector(rng, p)
 
-    strong = base.Regime(
+    large_case = base.Regime(
         name=f"largecov{p}",
         title=f"Large Covariance Case: d={p}, Same Mean, Different Covariances",
         p=p,
@@ -86,11 +91,11 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
         n_ref_per_class=3000,
         mean0=np.zeros(p),
         mean1=np.zeros(p),
-        Sigma0=sigma_strong_0,
-        Sigma1=sigma_strong_1,
+        Sigma0=sigma_large_0,
+        Sigma1=sigma_large_1,
         note="High-dimensional large-covariance regime with matched trace; no mean difference.",
     )
-    weak = base.Regime(
+    small_case = base.Regime(
         name=f"smallcov{p}",
         title=f"Small Covariance Case: d={p}, Mean Gap Plus Small Covariance Gap",
         p=p,
@@ -99,21 +104,22 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
         n_ref_per_class=3000,
         mean0=-0.55 * v,
         mean1=0.55 * v,
-        Sigma0=sigma_weak_0,
-        Sigma1=sigma_weak_1,
+        Sigma0=sigma_small_0,
+        Sigma1=sigma_small_1,
         note="High-dimensional case where the covariance gap is real but weaker than its estimation error.",
     )
-    return strong, weak
+    return large_case, small_case
 
 
-def run_linear_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
+def run_bestkernel_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
     raw_rows = []
     selection_rows = []
     cov_rows = []
     plot_payload = {}
 
-    X0_ref = base.sample_gaussian_antithetic(regime.n_ref_per_class, regime.mean0, regime.Sigma0, np.random.default_rng(seed + 901))
-    X1_ref = base.sample_gaussian_antithetic(regime.n_ref_per_class, regime.mean1, regime.Sigma1, np.random.default_rng(seed + 902))
+    rng_ref = np.random.default_rng(seed + 9999)
+    X0_ref = base.sample_gaussian_antithetic(regime.n_ref_per_class, regime.mean0, regime.Sigma0, rng_ref)
+    X1_ref = base.sample_gaussian_antithetic(regime.n_ref_per_class, regime.mean1, regime.Sigma1, rng_ref)
 
     for rep in range(repeats):
         rng = np.random.default_rng(seed + rep)
@@ -133,38 +139,44 @@ def run_linear_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
         X_val, y_val = X_train[val_idx], y_train[val_idx]
 
         original_diag = base.original_space_diagnostics(X0_train, X1_train, regime)
-        feat_diag = base.feature_space_diagnostics(X0_train, X1_train, X0_ref, X1_ref, LINEAR_KERNEL, LINEAR_PARAMS)
-        cov_rows.append(
-            {
-                "regime": regime.name,
-                "repeat": rep + 1,
-                "kernel": LINEAR_KERNEL,
-                "kernel_label": LINEAR_KERNEL,
-                **original_diag,
-                **feat_diag,
-            }
-        )
+        for metric, raw_params in base.STAGE1_KERNELS:
+            params_ref = base.normalize_kernel_params(metric, raw_params, X_train)
+            feat_diag = base.feature_space_diagnostics(X0_train, X1_train, X0_ref, X1_ref, metric, params_ref)
+            cov_rows.append(
+                {
+                    "regime": regime.name,
+                    "repeat": rep + 1,
+                    "kernel": metric,
+                    "kernel_label": base.kernel_label(metric, params_ref),
+                    **original_diag,
+                    **feat_diag,
+                }
+            )
 
         for variant in base.VARIANTS:
             dims = (1,) if variant == "KFDA-1D" else R_VALUES
             for r in dims:
-                cand = base.evaluate_variant_on_validation(
-                    variant=variant,
-                    proj_dim=r,
-                    X_fit=X_fit,
-                    y_fit=y_fit,
-                    X_val=X_val,
-                    y_val=y_val,
-                    anchor_per_class=40,
-                    stage1_seed=seed + 1000 * rep + 17 * r,
-                    metric=LINEAR_KERNEL,
-                    raw_params=LINEAR_PARAMS,
-                    reg=1e-6,
-                )
-                cand["regime"] = regime.name
-                cand["repeat"] = rep + 1
-                selection_rows.append(cand)
+                candidates = []
+                for metric, raw_params in base.STAGE1_KERNELS:
+                    cand = base.evaluate_variant_on_validation(
+                        variant=variant,
+                        proj_dim=r,
+                        X_fit=X_fit,
+                        y_fit=y_fit,
+                        X_val=X_val,
+                        y_val=y_val,
+                        anchor_per_class=40,
+                        stage1_seed=seed + 1000 * rep + 17 * r,
+                        metric=metric,
+                        raw_params=raw_params,
+                        reg=1e-6,
+                    )
+                    cand["regime"] = regime.name
+                    cand["repeat"] = rep + 1
+                    selection_rows.append(cand)
+                    candidates.append(cand)
 
+                best_cand = max(candidates, key=lambda row: row["val_acc"])
                 full = base.refit_variant_on_full_train(
                     variant=variant,
                     proj_dim=r,
@@ -174,8 +186,8 @@ def run_linear_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
                     y_test=y_test,
                     anchor_per_class=40,
                     stage1_seed=seed + 2000 * rep + 17 * r,
-                    metric=LINEAR_KERNEL,
-                    raw_or_norm_params=LINEAR_PARAMS,
+                    metric=best_cand["stage1_kernel"],
+                    raw_or_norm_params=best_cand["stage1_params"],
                     reg=1e-6,
                 )
                 raw_rows.append(
@@ -184,10 +196,10 @@ def run_linear_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
                         "repeat": rep + 1,
                         "variant": variant,
                         "r": int(r),
-                        "stage1_kernel": LINEAR_KERNEL,
-                        "stage1_label": LINEAR_KERNEL,
+                        "stage1_kernel": full["stage1_kernel"],
+                        "stage1_label": full["stage1_label"],
                         "test_acc": full["test_acc"],
-                        "val_acc": cand["val_acc"],
+                        "val_acc": best_cand["val_acc"],
                         "stage2_kernel": full["best_svm_kernel"],
                         "stage2_params": "{}",
                     }
@@ -196,7 +208,7 @@ def run_linear_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
                     plot_payload[(variant, int(r))] = {
                         "Z_show": full["Z_show"],
                         "y_show": full["y_show"],
-                        "stage1_label": LINEAR_KERNEL,
+                        "stage1_label": full["stage1_label"],
                     }
 
     df_raw = pd.DataFrame(raw_rows)
@@ -204,7 +216,9 @@ def run_linear_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
     df_cov = pd.DataFrame(cov_rows)
     df_acc = base.summarize_accuracy(df_raw)
     df_cov_summary = base.summarize_covariance(df_cov)
-    df_cov_summary["signal_to_noise_ratio"] = df_cov_summary["ref_D_sigma_feature"] / df_cov_summary["cov_gap_error_feature"]
+    df_cov_summary["signal_to_noise_ratio"] = (
+        df_cov_summary["ref_D_sigma_feature"] / df_cov_summary["cov_gap_error_feature"]
+    )
     return df_raw, df_sel, df_acc, df_cov, df_cov_summary, plot_payload
 
 
@@ -233,21 +247,21 @@ def collapse_by_kernel(df_cov_summary: pd.DataFrame) -> pd.DataFrame:
 def build_case_signal_summary(df_signal_noise: pd.DataFrame) -> pd.DataFrame:
     rows = []
     case_map = {
-        "strong_feature_covariance_signal": ("A", "Large covariance case"),
-        "weak_feature_covariance_signal": ("B", "Small covariance case"),
+        "large_covariance_case": ("A", "Large covariance case"),
+        "small_covariance_case": ("B", "Small covariance case"),
     }
     for case, (label, title) in case_map.items():
         sub = df_signal_noise[df_signal_noise["case"] == case].copy()
-        row = sub[sub["kernel"] == LINEAR_KERNEL].iloc[0] if (sub["kernel"] == LINEAR_KERNEL).any() else sub.iloc[0]
-        ratio = float(row["signal_to_noise_ratio"])
+        best = sub.sort_values("signal_to_noise_ratio", ascending=False).iloc[0]
+        ratio = float(best["signal_to_noise_ratio"])
         rows.append(
             {
                 "label": label,
                 "case": case,
                 "title": title,
-                "representative_kernel": row["kernel"],
-                "true_feature_covariance_difference": float(row["ref_D_sigma_feature"]),
-                "feature_covariance_error": float(row["cov_gap_error_feature"]),
+                "representative_kernel": best["kernel"],
+                "true_feature_covariance_difference": float(best["ref_D_sigma_feature"]),
+                "feature_covariance_error": float(best["cov_gap_error_feature"]),
                 "signal_to_noise_ratio": ratio,
                 "relation": "signal > error" if ratio > 1.0 else "signal < error",
             }
@@ -255,35 +269,33 @@ def build_case_signal_summary(df_signal_noise: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+def plot_accuracy_curves(large_acc: pd.DataFrame, small_acc: pd.DataFrame):
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5), sharey=True)
     colors = {"KFDA-1D": "#111827", "MY-large_mu": "#b91c1c", "MY-small_mu": "#1d4ed8"}
 
-    # Strong linear-kernel case.
     ax = axes[0]
-    sub = strong_acc.copy()
+    sub = large_acc.copy()
     kfda = sub[sub["variant"] == "KFDA-1D"].iloc[0]
     ax.axhline(float(kfda["mean"]), color=colors["KFDA-1D"], linestyle="--", linewidth=2.2, label="KFDA-1D")
     for variant in ("MY-large_mu", "MY-small_mu"):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("A: Large covariance case\nLinear stage-1 kernel")
+    ax.set_title("A: Large covariance case\nBest nested-selected stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_ylabel("test accuracy")
     ax.set_xticks(list(R_VALUES))
     ax.legend(frameon=True, fontsize=9)
 
-    # Weak linear-kernel case.
     ax = axes[1]
-    sub = weak_acc.copy()
+    sub = small_acc.copy()
     kfda = sub[sub["variant"] == "KFDA-1D"].iloc[0]
     ax.axhline(float(kfda["mean"]), color=colors["KFDA-1D"], linestyle="--", linewidth=2.2, label="KFDA-1D")
     for variant in ("MY-large_mu", "MY-small_mu"):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("B: Small covariance case\nLinear stage-1 kernel")
+    ax.set_title("B: Small covariance case\nBest nested-selected stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_xticks(list(R_VALUES))
     ax.legend(frameon=True, fontsize=9)
@@ -295,11 +307,12 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
     return out
 
 
-def plot_signal_vs_noise(strong_cov: pd.DataFrame, weak_cov: pd.DataFrame):
+def plot_signal_vs_noise(large_cov: pd.DataFrame, small_cov: pd.DataFrame):
     fig, axes = plt.subplots(1, 2, figsize=(16, 6), sharey=False)
 
-    def one_panel(ax, df, title, highlight_kernel=None):
+    def one_panel(ax, df, title):
         sub = df.copy().sort_values("signal_to_noise_ratio", ascending=False)
+        highlight_kernel = sub.iloc[0]["kernel"]
         x = np.arange(len(sub))
         ax.bar(x - 0.18, sub["ref_D_sigma_feature"], width=0.36, label=r"$D_\sigma^\phi$", color="#2563eb")
         ax.bar(x + 0.18, sub["cov_gap_error_feature"], width=0.36, label="covariance error", color="#dc2626")
@@ -309,16 +322,21 @@ def plot_signal_vs_noise(strong_cov: pd.DataFrame, weak_cov: pd.DataFrame):
         ax.set_ylabel("feature-space magnitude")
         ax.legend(frameon=True, fontsize=10)
         for i, (_, row) in enumerate(sub.iterrows()):
-            ax.text(i, max(row["ref_D_sigma_feature"], row["cov_gap_error_feature"]) * 1.02, f"{row['signal_to_noise_ratio']:.2f}",
-                    ha="center", va="bottom", fontsize=9)
-        if highlight_kernel is not None:
-            for tick, kern in zip(ax.get_xticklabels(), sub["kernel"]):
-                if kern == highlight_kernel:
-                    tick.set_color("#7c3aed")
-                    tick.set_fontweight("bold")
+            ax.text(
+                i,
+                max(row["ref_D_sigma_feature"], row["cov_gap_error_feature"]) * 1.02,
+                f"{row['signal_to_noise_ratio']:.2f}",
+                ha="center",
+                va="bottom",
+                fontsize=9,
+            )
+        for tick, kern in zip(ax.get_xticklabels(), sub["kernel"]):
+            if kern == highlight_kernel:
+                tick.set_color("#7c3aed")
+                tick.set_fontweight("bold")
 
-    one_panel(axes[0], strong_cov, "A: Large covariance case (linear kernel)\ntrue covariance difference > error", highlight_kernel=LINEAR_KERNEL)
-    one_panel(axes[1], weak_cov, "B: Small covariance case (linear kernel)\ntrue covariance difference < error", highlight_kernel=LINEAR_KERNEL)
+    one_panel(axes[0], large_cov, "A: Large covariance case\ntrue covariance difference > error")
+    one_panel(axes[1], small_cov, "B: Small covariance case\ntrue covariance difference < error")
 
     fig.tight_layout()
     out = OUT_DIR / "feature_space_signal_vs_noise.png"
@@ -354,7 +372,7 @@ def plot_case_signal_summary(df_case_summary: pd.DataFrame):
         ]
     )
     ax.set_ylabel("feature-space magnitude")
-    ax.set_title("Case-Level Feature Covariance Signal vs Error (Linear Kernel)")
+    ax.set_title("Case-Level Feature Covariance Signal vs Error")
     ax.legend(frameon=True, fontsize=10)
 
     for i, (_, row) in enumerate(df_case_summary.iterrows()):
@@ -375,45 +393,43 @@ def plot_case_signal_summary(df_case_summary: pd.DataFrame):
     return out
 
 
-def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_payload: dict, weak_acc: pd.DataFrame):
+def plot_projection_views(large_payload: dict, large_acc: pd.DataFrame, small_payload: dict, small_acc: pd.DataFrame):
     fig, axes = plt.subplots(2, 3, figsize=(16, 10))
 
-    # Strong case: linear stage-1 kernel
-    best_large = strong_acc[strong_acc["variant"] == "MY-large_mu"].sort_values("mean", ascending=False).iloc[0]
-    best_small = strong_acc[strong_acc["variant"] == "MY-small_mu"].sort_values("mean", ascending=False).iloc[0]
+    best_large = large_acc[large_acc["variant"] == "MY-large_mu"].sort_values("mean", ascending=False).iloc[0]
+    best_small = large_acc[large_acc["variant"] == "MY-small_mu"].sort_values("mean", ascending=False).iloc[0]
     panels = [("KFDA-1D", 1), ("MY-large_mu", int(best_large["r"])), ("MY-small_mu", int(best_small["r"]))]
 
     for ax, (variant, r) in zip(axes[0], panels):
-        payload = strong_payload[(variant, r)]
-        acc_val = float(
-            strong_acc[(strong_acc["variant"] == variant) & (strong_acc["r"] == r)]["mean"].iloc[0]
-        )
+        payload = large_payload[(variant, r)]
+        acc_val = float(large_acc[(large_acc["variant"] == variant) & (large_acc["r"] == r)]["mean"].iloc[0])
         Z2 = base.project_to_plot_2d(payload["Z_show"])
         y = payload["y_show"]
         for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
             idx = y == cls
             ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-        ax.set_title(f"Large covariance case, linear kernel\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
+        ax.set_title(
+            f"Large covariance case\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}\n{payload['stage1_label']}"
+        )
         ax.set_xlabel("2D view 1")
         ax.set_ylabel("2D view 2")
     axes[0, 0].legend(frameon=True, fontsize=9)
 
-    # Weak case: linear stage-1 kernel.
-    best_large = weak_acc[weak_acc["variant"] == "MY-large_mu"].sort_values("mean", ascending=False).iloc[0]
-    best_small = weak_acc[weak_acc["variant"] == "MY-small_mu"].sort_values("mean", ascending=False).iloc[0]
+    best_large = small_acc[small_acc["variant"] == "MY-large_mu"].sort_values("mean", ascending=False).iloc[0]
+    best_small = small_acc[small_acc["variant"] == "MY-small_mu"].sort_values("mean", ascending=False).iloc[0]
     panels = [("KFDA-1D", 1), ("MY-large_mu", int(best_large["r"])), ("MY-small_mu", int(best_small["r"]))]
 
     for ax, (variant, r) in zip(axes[1], panels):
-        payload = weak_payload[(variant, r)]
-        acc_val = float(
-            weak_acc[(weak_acc["variant"] == variant) & (weak_acc["r"] == r)]["mean"].iloc[0]
-        )
+        payload = small_payload[(variant, r)]
+        acc_val = float(small_acc[(small_acc["variant"] == variant) & (small_acc["r"] == r)]["mean"].iloc[0])
         Z2 = base.project_to_plot_2d(payload["Z_show"])
         y = payload["y_show"]
         for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
             idx = y == cls
             ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-        ax.set_title(f"Small covariance case, linear kernel\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
+        ax.set_title(
+            f"Small covariance case\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}\n{payload['stage1_label']}"
+        )
         ax.set_xlabel("2D view 1")
         ax.set_ylabel("2D view 2")
 
@@ -425,7 +441,7 @@ def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_p
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Feature-space signal vs estimation-noise demo (linear stage-1 kernel).")
+    parser = argparse.ArgumentParser(description="Feature-space signal vs estimation-noise demo.")
     parser.add_argument("--dimension", type=int, default=220, help="Input-space dimension for both synthetic regimes.")
     parser.add_argument("--repeats", type=int, default=1, help="Number of repeated outer runs.")
     parser.add_argument("--seed", type=int, default=123, help="Random seed for repeated evaluations.")
@@ -444,63 +460,61 @@ def main():
     OUT_DIR = ROOT / args.output_subdir
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    strong_regime, weak_regime = build_regimes(dimension=args.dimension)
-    df_strong_raw, df_strong_sel, df_strong_acc, df_strong_cov, df_strong_cov_summary, strong_payload = run_linear_case(
-        strong_regime,
+    large_regime, small_regime = build_regimes(dimension=args.dimension)
+    df_large_raw, df_large_sel, df_large_acc, df_large_cov, df_large_cov_summary, large_payload = run_bestkernel_case(
+        large_regime,
         repeats=args.repeats,
         seed=args.seed,
     )
-    df_weak_raw, df_weak_sel, df_weak_acc, df_weak_cov, df_weak_cov_summary, weak_payload = run_linear_case(
-        weak_regime,
+    df_small_raw, df_small_sel, df_small_acc, df_small_cov, df_small_cov_summary, small_payload = run_bestkernel_case(
+        small_regime,
         repeats=args.repeats,
         seed=args.seed,
     )
 
-    # Keep only one row per kernel after averaging repeats.
-    strong_cov_export = collapse_by_kernel(df_strong_cov_summary)
-    weak_cov_export = collapse_by_kernel(df_weak_cov_summary)
-    strong_cov_export["case"] = "strong_feature_covariance_signal"
-    weak_cov_export["case"] = "weak_feature_covariance_signal"
-    df_signal_noise = pd.concat([strong_cov_export, weak_cov_export], ignore_index=True)
+    large_cov_export = collapse_by_kernel(df_large_cov_summary)
+    small_cov_export = collapse_by_kernel(df_small_cov_summary)
+    large_cov_export["case"] = "large_covariance_case"
+    small_cov_export["case"] = "small_covariance_case"
+    df_signal_noise = pd.concat([large_cov_export, small_cov_export], ignore_index=True)
     df_case_summary = build_case_signal_summary(df_signal_noise)
 
-    # Save tables.
-    df_strong_raw.to_csv(OUT_DIR / "strong_bestkernel_test_results.csv", index=False)
-    df_strong_sel.to_csv(OUT_DIR / "strong_bestkernel_selection_log.csv", index=False)
-    df_strong_acc.to_csv(OUT_DIR / "strong_bestkernel_accuracy_summary.csv", index=False)
-    df_strong_cov.to_csv(OUT_DIR / "strong_bestkernel_covariance_diagnostics_per_repeat.csv", index=False)
-    df_weak_raw.to_csv(OUT_DIR / "weak_bestkernel_test_results.csv", index=False)
-    df_weak_sel.to_csv(OUT_DIR / "weak_bestkernel_selection_log.csv", index=False)
-    df_weak_acc.to_csv(OUT_DIR / "weak_bestkernel_accuracy_summary.csv", index=False)
-    df_weak_cov.to_csv(OUT_DIR / "weak_bestkernel_covariance_diagnostics_per_repeat.csv", index=False)
+    df_large_raw.to_csv(OUT_DIR / "strong_bestkernel_test_results.csv", index=False)
+    df_large_sel.to_csv(OUT_DIR / "strong_bestkernel_selection_log.csv", index=False)
+    df_large_acc.to_csv(OUT_DIR / "strong_bestkernel_accuracy_summary.csv", index=False)
+    df_large_cov.to_csv(OUT_DIR / "strong_bestkernel_covariance_diagnostics_per_repeat.csv", index=False)
+    df_small_raw.to_csv(OUT_DIR / "weak_bestkernel_test_results.csv", index=False)
+    df_small_sel.to_csv(OUT_DIR / "weak_bestkernel_selection_log.csv", index=False)
+    df_small_acc.to_csv(OUT_DIR / "weak_bestkernel_accuracy_summary.csv", index=False)
+    df_small_cov.to_csv(OUT_DIR / "weak_bestkernel_covariance_diagnostics_per_repeat.csv", index=False)
     df_signal_noise.to_csv(OUT_DIR / "feature_space_signal_noise_summary.csv", index=False)
     df_case_summary.to_csv(OUT_DIR / "signal_noise_case_summary.csv", index=False)
 
     pd.DataFrame(
         [
             {
-                "case": strong_regime.name,
-                "title": strong_regime.title,
-                "dimension": strong_regime.p,
-                "mean_gap_input": float(np.linalg.norm(strong_regime.mean1 - strong_regime.mean0)),
-                "cov_gap_input": float(np.linalg.norm(strong_regime.Sigma1 - strong_regime.Sigma0, ord="fro")),
-                "note": strong_regime.note,
+                "case": large_regime.name,
+                "title": large_regime.title,
+                "dimension": large_regime.p,
+                "mean_gap_input": float(np.linalg.norm(large_regime.mean1 - large_regime.mean0)),
+                "cov_gap_input": float(np.linalg.norm(large_regime.Sigma1 - large_regime.Sigma0, ord="fro")),
+                "note": large_regime.note,
             },
             {
-                "case": weak_regime.name,
-                "title": weak_regime.title,
-                "dimension": weak_regime.p,
-                "mean_gap_input": float(np.linalg.norm(weak_regime.mean1 - weak_regime.mean0)),
-                "cov_gap_input": float(np.linalg.norm(weak_regime.Sigma1 - weak_regime.Sigma0, ord="fro")),
-                "note": weak_regime.note,
+                "case": small_regime.name,
+                "title": small_regime.title,
+                "dimension": small_regime.p,
+                "mean_gap_input": float(np.linalg.norm(small_regime.mean1 - small_regime.mean0)),
+                "cov_gap_input": float(np.linalg.norm(small_regime.Sigma1 - small_regime.Sigma0, ord="fro")),
+                "note": small_regime.note,
             },
         ]
     ).to_csv(OUT_DIR / "case_setup.csv", index=False)
 
-    acc_plot = plot_accuracy_curves(df_strong_acc, df_weak_acc)
-    sig_plot = plot_signal_vs_noise(strong_cov_export, weak_cov_export)
+    acc_plot = plot_accuracy_curves(df_large_acc, df_small_acc)
+    sig_plot = plot_signal_vs_noise(large_cov_export, small_cov_export)
     case_sig_plot = plot_case_signal_summary(df_case_summary)
-    proj_plot = plot_projection_views(strong_payload, df_strong_acc, weak_payload, df_weak_acc)
+    proj_plot = plot_projection_views(large_payload, df_large_acc, small_payload, df_small_acc)
 
     print("Saved outputs:")
     print(f"- {OUT_DIR / 'strong_bestkernel_accuracy_summary.csv'}")
@@ -515,17 +529,17 @@ def main():
     print(f"- {proj_plot}")
 
     with pd.option_context("display.max_columns", None, "display.width", 240):
-        print("\nStrong-case accuracy summary:")
-        print(df_strong_acc)
-        print("\nWeak-case accuracy summary:")
-        print(df_weak_acc)
+        print("\nLarge-covariance accuracy summary:")
+        print(df_large_acc)
+        print("\nSmall-covariance accuracy summary:")
+        print(df_small_acc)
         print("\nFeature-space signal vs noise summary:")
         print(df_signal_noise)
         print("\nCase-level signal vs error summary:")
         print(df_case_summary)
 
     print("\nInterpretation:")
-    print(build_terminal_summary(df_strong_acc, df_weak_acc, df_signal_noise))
+    print(build_terminal_summary(df_large_acc, df_small_acc, df_case_summary))
 
     base.open_pngs(OUT_DIR)
 
