@@ -82,7 +82,7 @@ This case-level table makes the intended separation explicit at the feature-spac
 
 ![Feature-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs/feature_space_signal_vs_noise.png)
 
-The corresponding accuracy curves make the same point from the prediction side under the best nested-selected stage-1 kernels: when the covariance signal is stable, KDMLP can improve over KFDA, while in the weak-signal setting the behavior is much less robust and should be interpreted together with the covariance-error diagnostic above.
+The corresponding accuracy curves now use the representative nonlinear kernel from the feature-space table (`sigmoid` in both cases). Under that nonlinear stage-1 kernel, the large-covariance case still shows a stable covariance signal and KDMLP improves over KFDA, while in the small-covariance case the behavior remains much less robust and should be interpreted together with the covariance-error diagnostic above.
 
 ![Feature-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/accuracy_curves.png)
 

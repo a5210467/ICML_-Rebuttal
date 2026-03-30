@@ -222,6 +222,67 @@ def run_bestkernel_case(regime: base.Regime, repeats: int = 1, seed: int = 123):
     return df_raw, df_sel, df_acc, df_cov, df_cov_summary, plot_payload
 
 
+def run_fixed_kernel_case(
+    regime: base.Regime,
+    metric: str,
+    raw_params: dict,
+    repeats: int = 1,
+    seed: int = 123,
+):
+    raw_rows = []
+    plot_payload = {}
+
+    for rep in range(repeats):
+        rng = np.random.default_rng(seed + rep)
+        X0_train = base.sample_gaussian_antithetic(regime.n_train_per_class, regime.mean0, regime.Sigma0, rng)
+        X1_train = base.sample_gaussian_antithetic(regime.n_train_per_class, regime.mean1, regime.Sigma1, rng)
+        X0_test = base.sample_gaussian_antithetic(regime.n_test_per_class, regime.mean0, regime.Sigma0, rng)
+        X1_test = base.sample_gaussian_antithetic(regime.n_test_per_class, regime.mean1, regime.Sigma1, rng)
+
+        X_train = np.vstack([X0_train, X1_train])
+        y_train = np.hstack([np.zeros(len(X0_train), int), np.ones(len(X1_train), int)])
+        X_test = np.vstack([X0_test, X1_test])
+        y_test = np.hstack([np.zeros(len(X0_test), int), np.ones(len(X1_test), int)])
+
+        for variant in base.VARIANTS:
+            dims = (1,) if variant == "KFDA-1D" else R_VALUES
+            for r in dims:
+                full = base.refit_variant_on_full_train(
+                    variant=variant,
+                    proj_dim=r,
+                    X_train=X_train,
+                    y_train=y_train,
+                    X_test=X_test,
+                    y_test=y_test,
+                    anchor_per_class=40,
+                    stage1_seed=seed + 2000 * rep + 17 * r,
+                    metric=metric,
+                    raw_or_norm_params=raw_params,
+                    reg=1e-6,
+                )
+                raw_rows.append(
+                    {
+                        "regime": regime.name,
+                        "repeat": rep + 1,
+                        "variant": variant,
+                        "r": int(r),
+                        "stage1_kernel": full["stage1_kernel"],
+                        "stage1_label": full["stage1_label"],
+                        "test_acc": full["test_acc"],
+                    }
+                )
+                if rep == 0:
+                    plot_payload[(variant, int(r))] = {
+                        "Z_show": full["Z_show"],
+                        "y_show": full["y_show"],
+                        "stage1_label": full["stage1_label"],
+                    }
+
+    df_raw = pd.DataFrame(raw_rows)
+    df_acc = base.summarize_accuracy(df_raw)
+    return df_raw, df_acc, plot_payload
+
+
 def collapse_by_kernel(df_cov_summary: pd.DataFrame) -> pd.DataFrame:
     cols = [
         "ref_D_mu_feature",
@@ -269,7 +330,7 @@ def build_case_signal_summary(df_signal_noise: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def plot_accuracy_curves(large_acc: pd.DataFrame, small_acc: pd.DataFrame):
+def plot_accuracy_curves(large_acc: pd.DataFrame, small_acc: pd.DataFrame, large_label: str, small_label: str):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5), sharey=True)
     colors = {"KFDA-1D": "#111827", "MY-large_mu": "#b91c1c", "MY-small_mu": "#1d4ed8"}
 
@@ -281,7 +342,7 @@ def plot_accuracy_curves(large_acc: pd.DataFrame, small_acc: pd.DataFrame):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("A: Large covariance case\nBest nested-selected stage-1 kernel")
+    ax.set_title(f"A: Large covariance case\n{large_label}")
     ax.set_xlabel("projection dimension r")
     ax.set_ylabel("test accuracy")
     ax.set_xticks(list(R_VALUES))
@@ -295,7 +356,7 @@ def plot_accuracy_curves(large_acc: pd.DataFrame, small_acc: pd.DataFrame):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("B: Small covariance case\nBest nested-selected stage-1 kernel")
+    ax.set_title(f"B: Small covariance case\n{small_label}")
     ax.set_xlabel("projection dimension r")
     ax.set_xticks(list(R_VALUES))
     ax.legend(frameon=True, fontsize=9)
@@ -393,7 +454,12 @@ def plot_case_signal_summary(df_case_summary: pd.DataFrame):
     return out
 
 
-def plot_projection_views(large_payload: dict, large_acc: pd.DataFrame, small_payload: dict, small_acc: pd.DataFrame):
+def plot_projection_views(
+    large_payload: dict,
+    large_acc: pd.DataFrame,
+    small_payload: dict,
+    small_acc: pd.DataFrame,
+):
     fig, axes = plt.subplots(2, 3, figsize=(16, 10))
 
     best_large = large_acc[large_acc["variant"] == "MY-large_mu"].sort_values("mean", ascending=False).iloc[0]
@@ -454,6 +520,13 @@ def parse_args():
     return parser.parse_args()
 
 
+def kernel_raw_params_for_name(metric: str) -> dict:
+    for name, raw_params in base.STAGE1_KERNELS:
+        if name == metric:
+            return raw_params
+    raise ValueError(f"Unknown stage-1 kernel: {metric}")
+
+
 def main():
     args = parse_args()
     global OUT_DIR
@@ -511,10 +584,35 @@ def main():
         ]
     ).to_csv(OUT_DIR / "case_setup.csv", index=False)
 
-    acc_plot = plot_accuracy_curves(df_large_acc, df_small_acc)
+    large_kernel = str(df_case_summary[df_case_summary["label"] == "A"]["representative_kernel"].iloc[0])
+    small_kernel = str(df_case_summary[df_case_summary["label"] == "B"]["representative_kernel"].iloc[0])
+
+    _, df_large_fixed_acc, large_fixed_payload = run_fixed_kernel_case(
+        large_regime,
+        metric=large_kernel,
+        raw_params=kernel_raw_params_for_name(large_kernel),
+        repeats=args.repeats,
+        seed=args.seed,
+    )
+    _, df_small_fixed_acc, small_fixed_payload = run_fixed_kernel_case(
+        small_regime,
+        metric=small_kernel,
+        raw_params=kernel_raw_params_for_name(small_kernel),
+        repeats=args.repeats,
+        seed=args.seed,
+    )
+    df_large_fixed_acc.to_csv(OUT_DIR / "large_case_representative_kernel_accuracy_summary.csv", index=False)
+    df_small_fixed_acc.to_csv(OUT_DIR / "small_case_representative_kernel_accuracy_summary.csv", index=False)
+
+    acc_plot = plot_accuracy_curves(
+        df_large_fixed_acc,
+        df_small_fixed_acc,
+        f"{large_kernel} stage-1 kernel",
+        f"{small_kernel} stage-1 kernel",
+    )
     sig_plot = plot_signal_vs_noise(large_cov_export, small_cov_export)
     case_sig_plot = plot_case_signal_summary(df_case_summary)
-    proj_plot = plot_projection_views(large_payload, df_large_acc, small_payload, df_small_acc)
+    proj_plot = plot_projection_views(large_fixed_payload, df_large_fixed_acc, small_fixed_payload, df_small_fixed_acc)
 
     print("Saved outputs:")
     print(f"- {OUT_DIR / 'strong_bestkernel_accuracy_summary.csv'}")
@@ -533,6 +631,9 @@ def main():
         print(df_large_acc)
         print("\nSmall-covariance accuracy summary:")
         print(df_small_acc)
+        print("\nRepresentative-kernel accuracy summary:")
+        print(df_large_fixed_acc)
+        print(df_small_fixed_acc)
         print("\nFeature-space signal vs noise summary:")
         print(df_signal_noise)
         print("\nCase-level signal vs error summary:")
