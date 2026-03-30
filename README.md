@@ -71,6 +71,15 @@ This workspace is a diagnostic companion to the Gaussian experiments. KDMLP is d
 
 The plots below now show the default `d=220` comparison, because it gives the cleaner signal/noise contrast. In that run, the strong case has a best feature-space signal-to-noise ratio of `1.279`, so the covariance gap is genuinely more stable than its estimation error and KDMLP improves over KFDA (`0.596` vs `0.513`). The weak case stays around `0.45`, so the covariance part remains below the noise floor; there the best KDMLP result (`0.683` vs `0.648` for KFDA) should be read as a joint mean/covariance effect rather than as a pure covariance win. The higher-dimensional `d=500` run is still kept in the workspace as a supplementary check.
 
+| Label | Representative kernel | True feature covariance difference | Feature covariance error | Relation |
+| --- | --- | ---: | ---: | --- |
+| A | sigmoid | 0.0819 | 0.0641 | signal > error |
+| B | sigmoid | 0.0290 | 0.0649 | signal < error |
+
+This case-level table makes the intended separation explicit: in Case A, the true feature-space covariance difference is larger than the estimation error, whereas in Case B it is smaller.
+
+![Case-level feature covariance signal vs error](simulations/kernel_space_signal_noise_workspace/outputs/signal_noise_case_summary.png)
+
 ![Feature-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs/feature_space_signal_vs_noise.png)
 
 The corresponding accuracy curves make the same point from the prediction side: when the covariance signal is stable, KDMLP can improve over KFDA, while in the weak-signal setting the behavior is much less robust and should be interpreted together with the covariance-error diagnostic above.

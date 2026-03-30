@@ -167,6 +167,31 @@ def collapse_by_kernel(df_cov_summary: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def build_case_signal_summary(df_signal_noise: pd.DataFrame) -> pd.DataFrame:
+    rows = []
+    case_map = {
+        "strong_kernel_covariance_signal": ("A", "Strong feature covariance signal"),
+        "weak_kernel_covariance_signal": ("B", "Weak feature covariance signal"),
+    }
+    for case, (label, title) in case_map.items():
+        sub = df_signal_noise[df_signal_noise["case"] == case].copy()
+        best = sub.sort_values("signal_to_noise_ratio", ascending=False).iloc[0]
+        ratio = float(best["signal_to_noise_ratio"])
+        rows.append(
+            {
+                "label": label,
+                "case": case,
+                "title": title,
+                "representative_kernel": best["kernel"],
+                "true_feature_covariance_difference": float(best["ref_D_sigma_feature"]),
+                "feature_covariance_error": float(best["cov_gap_error_feature"]),
+                "signal_to_noise_ratio": ratio,
+                "relation": "signal > error" if ratio > 1.0 else "signal < error",
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
     colors = {"KFDA-1D": "#111827", "MY-large_mu": "#b91c1c", "MY-small_mu": "#1d4ed8"}
@@ -234,6 +259,54 @@ def plot_signal_vs_noise(strong_cov: pd.DataFrame, weak_cov: pd.DataFrame):
 
     fig.tight_layout()
     out = OUT_DIR / "feature_space_signal_vs_noise.png"
+    fig.savefig(out, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+    return out
+
+
+def plot_case_signal_summary(df_case_summary: pd.DataFrame):
+    fig, ax = plt.subplots(figsize=(9, 5))
+    x = np.arange(len(df_case_summary))
+    width = 0.34
+
+    ax.bar(
+        x - width / 2,
+        df_case_summary["true_feature_covariance_difference"],
+        width=width,
+        color="#2563eb",
+        label="true feature covariance difference",
+    )
+    ax.bar(
+        x + width / 2,
+        df_case_summary["feature_covariance_error"],
+        width=width,
+        color="#dc2626",
+        label="feature covariance error",
+    )
+    ax.set_xticks(x)
+    ax.set_xticklabels(
+        [
+            f"{row['label']}: {row['title']}\n{row['representative_kernel']}"
+            for _, row in df_case_summary.iterrows()
+        ]
+    )
+    ax.set_ylabel("feature-space magnitude")
+    ax.set_title("Case-Level Feature Covariance Signal vs Error")
+    ax.legend(frameon=True, fontsize=10)
+
+    for i, (_, row) in enumerate(df_case_summary.iterrows()):
+        ymax = max(row["true_feature_covariance_difference"], row["feature_covariance_error"])
+        ax.text(
+            i,
+            ymax * 1.03,
+            f"ratio={row['signal_to_noise_ratio']:.2f}\n{row['relation']}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+        )
+
+    fig.tight_layout()
+    out = OUT_DIR / "signal_noise_case_summary.png"
     fig.savefig(out, dpi=180, bbox_inches="tight")
     plt.close(fig)
     return out
@@ -327,6 +400,7 @@ def main():
     strong_cov_export["case"] = "strong_kernel_covariance_signal"
     weak_cov_export["case"] = "weak_kernel_covariance_signal"
     df_signal_noise = pd.concat([strong_cov_export, weak_cov_export], ignore_index=True)
+    df_case_summary = build_case_signal_summary(df_signal_noise)
 
     # Save tables.
     df_strong_raw.to_csv(OUT_DIR / "strong_bestkernel_test_results.csv", index=False)
@@ -338,6 +412,7 @@ def main():
     df_weak_acc.to_csv(OUT_DIR / "weak_bestkernel_accuracy_summary.csv", index=False)
     df_weak_cov.to_csv(OUT_DIR / "weak_bestkernel_covariance_diagnostics_per_repeat.csv", index=False)
     df_signal_noise.to_csv(OUT_DIR / "feature_space_signal_noise_summary.csv", index=False)
+    df_case_summary.to_csv(OUT_DIR / "signal_noise_case_summary.csv", index=False)
 
     pd.DataFrame(
         [
@@ -362,16 +437,19 @@ def main():
 
     acc_plot = plot_accuracy_curves(df_strong_acc, df_weak_acc)
     sig_plot = plot_signal_vs_noise(strong_cov_export, weak_cov_export)
+    case_sig_plot = plot_case_signal_summary(df_case_summary)
     proj_plot = plot_projection_views(strong_payload, df_strong_acc, weak_payload, df_weak_acc)
 
     print("Saved outputs:")
     print(f"- {OUT_DIR / 'strong_bestkernel_accuracy_summary.csv'}")
     print(f"- {OUT_DIR / 'weak_bestkernel_accuracy_summary.csv'}")
     print(f"- {OUT_DIR / 'feature_space_signal_noise_summary.csv'}")
+    print(f"- {OUT_DIR / 'signal_noise_case_summary.csv'}")
     print(f"- {OUT_DIR / 'case_setup.csv'}")
     print(f"- dimension={args.dimension}, repeats={args.repeats}, seed={args.seed}")
     print(f"- {acc_plot}")
     print(f"- {sig_plot}")
+    print(f"- {case_sig_plot}")
     print(f"- {proj_plot}")
 
     with pd.option_context("display.max_columns", None, "display.width", 240):
@@ -381,6 +459,8 @@ def main():
         print(df_weak_acc)
         print("\nFeature-space signal vs noise summary:")
         print(df_signal_noise)
+        print("\nCase-level signal vs error summary:")
+        print(df_case_summary)
 
     print("\nInterpretation:")
     print(build_terminal_summary(df_strong_acc, df_weak_acc, df_signal_noise))

@@ -26,12 +26,21 @@ python kernel_space_signal_noise_demo.py --dimension 500 --repeats 3 --output-su
 - `outputs/strong_bestkernel_accuracy_summary.csv`
 - `outputs/weak_bestkernel_accuracy_summary.csv`
 - `outputs/feature_space_signal_noise_summary.csv`
+- `outputs/signal_noise_case_summary.csv`
 - `outputs/accuracy_curves.png`
+- `outputs/signal_noise_case_summary.png`
 - `outputs/feature_space_signal_vs_noise.png`
 - `outputs/projection_views.png`
 - `outputs_d500_r3/`
 
 The figures below use the default `d=220` run in `outputs/`, since it gives the cleaner strong `>1` versus weak `\approx 0.5` signal/noise contrast. The `d=500` run remains available in `outputs_d500_r3/` as a supplementary check.
+
+| Label | Representative kernel | True feature covariance difference | Feature covariance error | Relation |
+| --- | --- | ---: | ---: | --- |
+| A | sigmoid | 0.0819 | 0.0641 | signal > error |
+| B | sigmoid | 0.0290 | 0.0649 | signal < error |
+
+![Case-level feature covariance signal vs error](outputs/signal_noise_case_summary.png)
 
 ![Feature-space signal vs noise](outputs/feature_space_signal_vs_noise.png)
 
