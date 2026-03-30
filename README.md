@@ -34,15 +34,15 @@ The smoother `p=500` grid is
 
 ![Gaussian KDMLP vs KFDA high-dimensional follow-up](simulations/redo_projection_workspace/outputs_d500_r32_smooth/accuracy_curves_best_kernel.png)
 
-The original baseline sweep uses `p=20` with `r in {1,2,3,4,8,16,32,64}` and gives:
+The original baseline sweep uses `p=20` with `r in {1,2,3,4,5,6,7,8,10,12,14,16,20}` and gives:
 
 | Label | Regime (`p=20`) | KFDA-1D | Best KDMLP | Best KDMLP acc. |
 | --- | --- | ---: | --- | ---: |
-| A | Same mean, different covariance | 0.686 | `KDMLP small`, `r=64` | 0.866 |
-| B | Different mean, different covariance | 0.738 | `KDMLP small`, `r=64` | 0.910 |
-| C | Different mean, small covariance gap | 0.601 | `KDMLP large`, `r=32` | 0.617 |
+| A | Same mean, different covariance | 0.686 | `KDMLP small`, `r=10` | 0.820 |
+| B | Different mean, different covariance | 0.738 | `KDMLP large`, `r=16` | 0.887 |
+| C | Different mean, small covariance gap | 0.601 | `KDMLP large`, `r=16` | 0.602 |
 
-Here `p` is the original input dimension of the Gaussian data, while `r` is the target KDMLP projection dimension in the kernel feature space. Because the stage-1 projection lives in the kernel/anchor span rather than directly in the original input space, it is possible for `r` to exceed `p`; that is why the `p=20` baseline can still be swept up to `r=64`. For presentation, however, the `p=500` run is the cleaner large-dimensional example.
+Here `p` is the original input dimension of the Gaussian data and `r` is the target KDMLP projection dimension. To keep the interpretation as true dimension reduction, the corrected Gaussian workspace now enforces `r <= p` for every stage-1 kernel, so the `p=20` sweep stops at `r=20`. For presentation, the `p=500` run is still the cleaner large-dimensional example.
 
 ![Gaussian KDMLP vs KFDA baseline sweep](simulations/redo_projection_workspace/outputs/accuracy_curves_best_kernel.png)
 
@@ -52,11 +52,11 @@ We also record wall-clock timing for the baseline `p=20` Gaussian sweep in `simu
 
 | Label | Regime (`p=20`) | KFDA-1D time (s) | Fastest KDMLP time (s) | Best-accuracy KDMLP acc. / time |
 | --- | --- | ---: | ---: | --- |
-| A | Same mean, different covariance | 0.54 | 0.65 | 0.866 at 1.34s |
-| B | Different mean, different covariance | 0.37 | 0.48 | 0.910 at 1.01s |
-| C | Different mean, small covariance gap | 0.27 | 0.35 | 0.617 at 0.56s |
+| A | Same mean, different covariance | 0.55 | 0.67 | 0.820 at 0.80s |
+| B | Different mean, different covariance | 0.36 | 0.48 | 0.887 at 0.70s |
+| C | Different mean, small covariance gap | 0.27 | 0.36 | 0.602 at 0.50s |
 
-This timing pattern matches the statistical story in the plots: KDMLP pays a higher stage-1 cost because it searches over covariance-sensitive projections and larger `r`, but the extra computation is most justified in the covariance-rich regimes where the accuracy gain over KFDA is much larger.
+This timing pattern matches the corrected statistical story in the plots: KDMLP still pays a higher stage-1 cost because it searches over covariance-sensitive projections, but under the `r <= p` cap the extra computation is clearly most justified in the covariance-rich regimes, while the small-gap regime is nearly flat against KFDA.
 
 ## 2. Feature-Space Signal vs Estimation Noise
 
@@ -69,7 +69,7 @@ This workspace is a diagnostic companion to the Gaussian experiments. KDMLP is d
 | A | Strong feature covariance signal (`d=500`) | 0.835 | 0.529 | 0.579 |
 | B | Weak feature covariance signal (`d=500`) | 0.436 | 0.580 | 0.679 |
 
-The plots below now show the higher-dimensional supplementary run at `d=500` with `repeats=3`. In that run, the strong case still favors KDMLP (`KFDA-1D = 0.529`, best KDMLP `= 0.579`), while the weak case remains covariance-noise dominated in the feature-space diagnostic (best signal-to-noise ratio about `0.436`). The complementary small-gap Gaussian regime in `simulations/redo_projection_workspace` is still much less decisive than the covariance-rich cases: after extending the KDMLP sweep to `r=64`, the best KDMLP accuracy is only `0.617` versus `0.601` for `KFDA-1D`, so the gain is marginal rather than a strong win.
+The plots below now show the higher-dimensional supplementary run at `d=500` with `repeats=3`. In that run, the strong case still favors KDMLP (`KFDA-1D = 0.529`, best KDMLP `= 0.579`), while the weak case remains covariance-noise dominated in the feature-space diagnostic (best signal-to-noise ratio about `0.436`). The complementary small-gap Gaussian regime in `simulations/redo_projection_workspace` is still much less decisive than the covariance-rich cases: after correcting the baseline so that `r <= p`, the best KDMLP accuracy is only `0.602` versus `0.601` for `KFDA-1D`, so the gain is essentially flat rather than a strong win.
 
 ![Feature-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs_d500_r3/feature_space_signal_vs_noise.png)
 

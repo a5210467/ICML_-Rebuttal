@@ -42,9 +42,9 @@ VARIANT_DISPLAY = {
     "MY-large_mu": "KDMLP large",
     "MY-small_mu": "KDMLP small",
 }
-# Extended sweep so the Gaussian rebuttal experiments no longer stop at r=4.
-# We use a sparse ladder to 64 to keep the nested-selection runtime manageable.
-R_VALUES = (1, 2, 3, 4, 8, 16, 32, 64)
+# Default ladder used across Gaussian reruns. The effective grid is always
+# capped by the original dimension p so that r remains a true reduction size.
+R_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32)
 
 
 sns.set_theme(style="whitegrid", context="talk")
@@ -66,6 +66,13 @@ def parse_r_values(raw: str) -> tuple[int, ...]:
     if not vals:
         raise ValueError("At least one r value must be provided.")
     return tuple(vals)
+
+
+def cap_r_values_for_dimension(r_values: tuple[int, ...], p: int) -> tuple[int, ...]:
+    capped = tuple(r for r in r_values if int(r) <= int(p))
+    if not capped:
+        raise ValueError(f"No valid r values remain after enforcing r <= p={p}.")
+    return capped
 
 
 def gamma_scale_value(X_ref: np.ndarray) -> float:
@@ -1086,7 +1093,7 @@ def main():
     parser.add_argument(
         "--r-values",
         type=str,
-        default="1,2,3,4,8,16,32,64",
+        default="1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32",
         help="Comma-separated KDMLP target dimensions.",
     )
     parser.add_argument(
@@ -1103,7 +1110,8 @@ def main():
     global OUT_DIR, R_VALUES
     OUT_DIR = ROOT / args.output_subdir
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    R_VALUES = parse_r_values(args.r_values)
+    requested_r = parse_r_values(args.r_values)
+    R_VALUES = cap_r_values_for_dimension(requested_r, args.dimension)
 
     regimes = build_regimes(args.dimension)
     all_raw = []
@@ -1180,6 +1188,8 @@ def main():
     print("\nInterpretation:")
     print(build_terminal_summary(df_acc, df_regime))
     print(build_timing_paragraph(df_time_summary))
+    if R_VALUES != requested_r:
+        print(f"Using r grid capped by p={args.dimension}: {R_VALUES}")
 
     open_pngs(OUT_DIR)
 
