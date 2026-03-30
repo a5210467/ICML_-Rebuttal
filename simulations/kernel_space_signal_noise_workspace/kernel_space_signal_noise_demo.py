@@ -16,7 +16,9 @@ This workspace intentionally focuses on two high-dimensional regimes:
    the covariance part is not trustworthy on its own.
 
 The point is to show the two stories side by side with the same stage-1/stage-2
-pipeline, not to introduce another approximate implementation.
+pipeline, not to introduce another approximate implementation. In the default
+run, the strong case has a best feature-space covariance signal/error ratio
+above 1, while the weak case stays around 0.5.
 """
 
 import argparse

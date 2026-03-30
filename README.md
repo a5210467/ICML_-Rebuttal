@@ -66,16 +66,16 @@ This workspace is a diagnostic companion to the Gaussian experiments. KDMLP is d
 
 | Label | Case | Best feature-space signal / noise | KFDA-1D | Best KDMLP |
 | --- | ---: | ---: | ---: |
-| A | Strong feature covariance signal (`d=500`) | 0.835 | 0.529 | 0.579 |
-| B | Weak feature covariance signal (`d=500`) | 0.436 | 0.580 | 0.679 |
+| A | Strong feature covariance signal (`d=220`) | 1.279 | 0.513 | 0.596 |
+| B | Weak feature covariance signal (`d=220`) | 0.447 | 0.648 | 0.683 |
 
-The plots below now show the higher-dimensional supplementary run at `d=500` with `repeats=3`. In that run, the strong case still favors KDMLP (`KFDA-1D = 0.529`, best KDMLP `= 0.579`), while the weak case remains covariance-noise dominated in the feature-space diagnostic (best signal-to-noise ratio about `0.436`). The complementary Gaussian workspace should still be read as a joint mean/covariance story: in the moderate `p=120` small-gap regime, the best KDMLP setting occurs at very small `r`, which suggests that the mean-separation component can matter more than large covariance-sensitive expansions even when the covariance gap is real.
+The plots below now show the default `d=220` comparison, because it gives the cleaner signal/noise contrast. In that run, the strong case has a best feature-space signal-to-noise ratio of `1.279`, so the covariance gap is genuinely more stable than its estimation error and KDMLP improves over KFDA (`0.596` vs `0.513`). The weak case stays around `0.45`, so the covariance part remains below the noise floor; there the best KDMLP result (`0.683` vs `0.648` for KFDA) should be read as a joint mean/covariance effect rather than as a pure covariance win. The higher-dimensional `d=500` run is still kept in the workspace as a supplementary check.
 
-![Feature-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs_d500_r3/feature_space_signal_vs_noise.png)
+![Feature-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs/feature_space_signal_vs_noise.png)
 
 The corresponding accuracy curves make the same point from the prediction side: when the covariance signal is stable, KDMLP can improve over KFDA, while in the weak-signal setting the behavior is much less robust and should be interpreted together with the covariance-error diagnostic above.
 
-![Feature-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs_d500_r3/accuracy_curves.png)
+![Feature-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/accuracy_curves.png)
 
 ## 3. Gaussian KDMLP vs SupCon
 
