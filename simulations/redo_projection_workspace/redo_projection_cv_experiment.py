@@ -37,6 +37,11 @@ STAGE1_KERNELS = [
     ("sigmoid", {"gamma": "scale", "coef0": 0.0}),
 ]
 VARIANTS = ("KFDA-1D", "MY-large_mu", "MY-small_mu")
+VARIANT_DISPLAY = {
+    "KFDA-1D": "KFDA-1D",
+    "MY-large_mu": "KDMLP large",
+    "MY-small_mu": "KDMLP small",
+}
 # Extended sweep so the Gaussian rebuttal experiments no longer stop at r=4.
 # We use a sparse ladder to 64 to keep the nested-selection runtime manageable.
 R_VALUES = (1, 2, 3, 4, 8, 16, 32, 64)
@@ -44,6 +49,10 @@ R_VALUES = (1, 2, 3, 4, 8, 16, 32, 64)
 
 sns.set_theme(style="whitegrid", context="talk")
 np.set_printoptions(suppress=True, precision=4)
+
+
+def variant_display(variant: str) -> str:
+    return VARIANT_DISPLAY.get(str(variant), str(variant))
 
 
 def parse_r_values(raw: str) -> tuple[int, ...]:
@@ -290,7 +299,7 @@ def build_regimes(p: int):
     return [
         Regime(
             name="same_mean_diff_covariance",
-            title="Case A: Same Mean, Different Dense Covariances",
+            title="Case A: Same Mean, Different Covariances",
             p=p,
             n_train_per_class=260,
             n_test_per_class=1200,
@@ -299,11 +308,11 @@ def build_regimes(p: int):
             mean1=np.zeros(p),
             Sigma0=base_strong,
             Sigma1=strong_alt,
-            note="Pure covariance separation with dense, non-diagonal covariances and matched trace.",
+            note="Pure covariance separation with non-diagonal covariances and matched trace.",
         ),
         Regime(
             name="diff_mean_diff_covariance",
-            title="Case B: Different Mean, Different Dense Covariances",
+            title="Case B: Different Mean, Different Covariances",
             p=p,
             n_train_per_class=220,
             n_test_per_class=1200,
@@ -312,11 +321,11 @@ def build_regimes(p: int):
             mean1=0.45 * v_mix,
             Sigma0=base_mix,
             Sigma1=mix_alt,
-            note="Both mean and covariance differ, with the covariance gap still dense and matched in trace.",
+            note="Both mean and covariance differ, with the covariance gap still matched in trace.",
         ),
         Regime(
             name="diff_mean_tiny_covariance_gap",
-            title="Case C: Different Mean, Tiny Dense Covariance Gap",
+            title="Case C: Different Mean, Small Covariance Gap",
             p=p,
             n_train_per_class=160,
             n_test_per_class=1200,
@@ -898,7 +907,7 @@ def build_terminal_summary(df_acc: pd.DataFrame, df_regime: pd.DataFrame) -> str
     rich_wins = []
     for regime in rich_regimes:
         kfda, best = best_rows[regime]
-        rich_wins.append(f"{best['variant']} at r={int(best['r'])} ({best['mean']:.3f} vs {kfda['mean']:.3f} for KFDA)")
+        rich_wins.append(f"{variant_display(best['variant'])} at r={int(best['r'])} ({best['mean']:.3f} vs {kfda['mean']:.3f} for KFDA)")
 
     weak_regime = "diff_mean_tiny_covariance_gap"
     weak_sentence = ""
@@ -927,7 +936,7 @@ def build_timing_paragraph(df_timing: pd.DataFrame) -> str:
         best = sub[sub["variant"] != "KFDA-1D"].sort_values("total_seconds_mean").iloc[0]
         lines.append(
             f"{regime}: KFDA averages {kfda['total_seconds_mean']:.2f}s total, while the fastest KDMLP setting "
-            f"averages {best['total_seconds_mean']:.2f}s ({best['variant']}, r={int(best['r'])})."
+            f"averages {best['total_seconds_mean']:.2f}s ({variant_display(best['variant'])}, r={int(best['r'])})."
         )
     return "Wall-clock summary: " + " ".join(lines)
 
@@ -964,7 +973,7 @@ def plot_accuracy_curves(regimes, df_acc: pd.DataFrame):
 
         for variant in ("MY-large_mu", "MY-small_mu"):
             cur = sub[sub["variant"] == variant].sort_values("r")
-            ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=variant)
+            ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=variant_display(variant))
             ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
 
         ax.set_title(regime.title)
@@ -1039,7 +1048,7 @@ def plot_projection_panels(regimes, plot_payload_map: dict, df_acc: pd.DataFrame
             y = payload["y_show"]
             ax.scatter(Z2[y == 0, 0], Z2[y == 0, 1], s=14, alpha=0.60, color="#1d4ed8", label="class 0")
             ax.scatter(Z2[y == 1, 0], Z2[y == 1, 1], s=14, alpha=0.60, color="#b91c1c", label="class 1")
-            title = variant if variant == "KFDA-1D" else f"{variant}, r={r}"
+            title = variant_display(variant) if variant == "KFDA-1D" else f"{variant_display(variant)}, r={r}"
             ax.set_title(f"{regime.title}\n{title}\n{payload['stage1_label']}")
             ax.set_xlabel("2D view coord 1")
             ax.set_ylabel("2D view coord 2")

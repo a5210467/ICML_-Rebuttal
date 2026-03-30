@@ -291,7 +291,7 @@ def plot_best_kernel_curves(regimes, df_best_summary: pd.DataFrame):
             piece = sub[sub["variant"] == variant].sort_values("r")
             if piece.empty:
                 continue
-            ax.plot(piece["r"], piece["mean"], marker="o", linewidth=2.5, label=variant, color=colors[variant])
+            ax.plot(piece["r"], piece["mean"], marker="o", linewidth=2.5, label=base.variant_display(variant), color=colors[variant])
         ax.set_title(regime.title)
         ax.set_xlabel("projection dimension r")
         ax.set_ylabel("test accuracy")
@@ -319,7 +319,7 @@ def plot_same_mean_per_kernel(df_kernel_summary: pd.DataFrame):
             if line.empty:
                 continue
             ax.plot(line["r"], line["mean"], marker="o", linewidth=2.2, label=kernel)
-        ax.set_title(f"{variant} on same-mean case")
+        ax.set_title(f"{base.variant_display(variant)} on same-mean case")
         ax.set_xlabel("projection dimension r")
         ax.set_ylabel("test accuracy")
         ax.set_ylim(0.45, 1.02)
@@ -362,7 +362,7 @@ def plot_selected_projection_views(regimes, plot_payload_map, df_best_summary):
             for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
                 idx = y == cls
                 ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-            ax.set_title(f"{regime.name}\n{variant}, r={r}\nacc={payload['test_acc']:.4f}")
+            ax.set_title(f"{regime.name}\n{base.variant_display(variant)}, r={r}\nacc={payload['test_acc']:.4f}")
             ax.set_xlabel("2D view 1")
             ax.set_ylabel("2D view 2")
             if row_idx == 0 and col_idx == 0:

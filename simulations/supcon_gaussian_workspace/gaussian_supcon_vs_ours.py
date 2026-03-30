@@ -24,6 +24,13 @@ import redo_projection_cv_experiment as base  # type: ignore
 
 sns.set_theme(style="whitegrid", context="talk")
 
+DISPLAY_METHOD = {
+    "KFDA-1D": "KFDA-1D",
+    "MY-large_mu": "KDMLP large",
+    "MY-small_mu": "KDMLP small",
+    "SupCon-feature": "SupCon",
+}
+
 
 def open_png_outputs(out_dir: Path) -> None:
     pngs = sorted(out_dir.glob("*.png"))
@@ -198,7 +205,8 @@ def run_gaussian_experiment():
         axes = [axes]
     for ax, regime in zip(axes, regimes):
         sub = df_summary[df_summary["regime"] == regime.name].copy()
-        ax.bar(sub["method"], sub["acc_mean"], yerr=sub["acc_std"], color=["#577590", "#43aa8b", "#f8961e", "#f94144"])
+        sub["method_display"] = sub["method"].map(DISPLAY_METHOD)
+        ax.bar(sub["method_display"], sub["acc_mean"], yerr=sub["acc_std"], color=["#577590", "#43aa8b", "#f8961e", "#f94144"])
         ax.set_title(regime.title)
         ax.set_ylim(0.45, 1.0)
         ax.tick_params(axis="x", rotation=18)

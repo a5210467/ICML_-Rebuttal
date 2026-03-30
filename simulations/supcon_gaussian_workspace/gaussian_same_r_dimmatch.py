@@ -31,6 +31,12 @@ import redo_projection_cv_experiment as base  # type: ignore
 
 sns.set_theme(style="whitegrid", context="talk")
 
+DISPLAY_METHOD = {
+    "MY-large_mu": "KDMLP large",
+    "MY-small_mu": "KDMLP small",
+    "SupCon": "SupCon",
+}
+
 
 def open_png_outputs(out_dir: Path) -> None:
     pngs = sorted(out_dir.glob("*.png"))
@@ -292,7 +298,7 @@ def run_case():
     fig, ax = plt.subplots(figsize=(9, 5))
     for method, color in [("MY-large_mu", "#43aa8b"), ("MY-small_mu", "#f8961e"), ("SupCon", "#f94144")]:
         sub = acc_summary[acc_summary["method"] == method].sort_values("r")
-        ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, label=method, color=color)
+        ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, label=DISPLAY_METHOD[method], color=color)
     ax.set_xlabel("Reduced dimension r")
     ax.set_ylabel("Accuracy")
     ax.set_title("Same-r comparison: MY vs SupCon")
@@ -304,7 +310,7 @@ def run_case():
     fig, ax = plt.subplots(figsize=(9, 5))
     for method, color in [("MY-large_mu", "#43aa8b"), ("MY-small_mu", "#f8961e"), ("SupCon", "#f94144")]:
         sub = cov_summary[cov_summary["method"] == method].sort_values("r")
-        ax.plot(sub["r"], sub["cov_gap_error"], marker="o", linewidth=2.5, label=method, color=color)
+        ax.plot(sub["r"], sub["cov_gap_error"], marker="o", linewidth=2.5, label=DISPLAY_METHOD[method], color=color)
     ax.set_xlabel("Reduced dimension r")
     ax.set_ylabel("Covariance-gap error")
     ax.set_title("Approximate vs reference covariance-gap error")

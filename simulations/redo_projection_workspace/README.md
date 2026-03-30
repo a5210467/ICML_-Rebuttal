@@ -4,7 +4,7 @@ This folder is a fresh rebuild of the synthetic comparison, using the style of t
 
 - nested kernel selection for stage 1
 - stage-2 SVM cross-validation
-- paper-style block `A, B` stage-1 solves for `MY-large_mu` and `MY-small_mu`
+- paper-style block `A, B` stage-1 solves for `KDMLP large` and `KDMLP small`
 - KFDA baseline
 - original-space and feature-space covariance diagnostics
 - an extended KDMLP target-dimension sweep `r in {1,2,3,4,8,16,32,64}`
@@ -41,11 +41,11 @@ The main follow-up we now highlight is the smoother high-dimensional run:
 
 That run gives:
 
-| Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
-| --- | ---: | --- | ---: |
-| Same mean, different covariance | 0.523 | `MY-large_mu`, `r=32` | 0.697 |
-| Different mean, different covariance | 0.646 | `MY-large_mu`, `r=32` | 0.686 |
-| Different mean, tiny covariance gap | 0.663 | `MY-large_mu`, `r=1` | 0.677 |
+| Label | Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
+| --- | --- | ---: | --- | ---: |
+| A | Same mean, different covariance | 0.523 | `KDMLP large`, `r=32` | 0.697 |
+| B | Different mean, different covariance | 0.646 | `KDMLP large`, `r=32` | 0.686 |
+| C | Different mean, small covariance gap | 0.663 | `KDMLP large`, `r=1` | 0.677 |
 
 The smoother high-dimensional curve is here:
 
@@ -53,23 +53,25 @@ The smoother high-dimensional curve is here:
 
 The original baseline sweep is still kept in `outputs/`, with the broader but sparser grid `r in {1,2,3,4,8,16,32,64}`:
 
-| Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
-| --- | ---: | --- | ---: |
-| Same mean, different covariance | 0.686 | `MY-small_mu`, `r=64` | 0.866 |
-| Different mean, different covariance | 0.738 | `MY-small_mu`, `r=64` | 0.910 |
-| Different mean, tiny covariance gap | 0.601 | `MY-large_mu`, `r=32` | 0.617 |
+| Label | Regime | KFDA-1D | Best KDMLP | Best KDMLP acc. |
+| --- | --- | ---: | --- | ---: |
+| A | Same mean, different covariance | 0.686 | `KDMLP small`, `r=64` | 0.866 |
+| B | Different mean, different covariance | 0.738 | `KDMLP small`, `r=64` | 0.910 |
+| C | Different mean, small covariance gap | 0.601 | `KDMLP large`, `r=32` | 0.617 |
+
+Here `p` is the original Gaussian input dimension and `r` is the target projection dimension in the kernel feature space, so `r` may exceed `p` in the kernelized sweep. The `p=500` run is therefore the cleaner large-dimensional presentation, while the `p=20` run is kept as the original baseline.
 
 ## Running time
 
 The script now also records wall-clock time in `outputs/timing_summary.csv` for the baseline `p=20` sweep. The exact kernel KFDA solve is still faster, while KDMLP spends more time in the covariance-sensitive stage-1 search and in larger target dimensions.
 
-| Regime | KFDA-1D time (s) | Fastest KDMLP time (s) | Best-accuracy KDMLP acc. / time |
-| --- | ---: | ---: | --- |
-| Same mean, different covariance | 0.54 | 0.65 | 0.866 at 1.34s |
-| Different mean, different covariance | 0.37 | 0.48 | 0.910 at 1.01s |
-| Different mean, tiny covariance gap | 0.27 | 0.35 | 0.617 at 0.56s |
+| Label | Regime | KFDA-1D time (s) | Fastest KDMLP time (s) | Best-accuracy KDMLP acc. / time |
+| --- | --- | ---: | ---: | --- |
+| A | Same mean, different covariance | 0.54 | 0.65 | 0.866 at 1.34s |
+| B | Different mean, different covariance | 0.37 | 0.48 | 0.910 at 1.01s |
+| C | Different mean, small covariance gap | 0.27 | 0.35 | 0.617 at 0.56s |
 
-So the practical trade-off is fairly clean in this synthetic setting: KFDA is cheaper, but KDMLP can buy a substantial accuracy gain in the covariance-rich regimes, whereas the weak-gap regime yields only a small statistical return for the extra runtime.
+So the practical trade-off is fairly clean in this synthetic setting: KFDA is cheaper, but KDMLP can buy a substantial accuracy gain in the covariance-rich regimes, whereas the small-gap regime yields only a small statistical return for the extra runtime.
 
 ![Baseline Gaussian sweep](outputs/accuracy_curves_best_kernel.png)
 

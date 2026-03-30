@@ -1,3 +1,3 @@
 case,title,dimension,mean_gap_input,cov_gap_input,note
-strong500,"Strong Case: d=500, Same Mean, Different Dense Covariances",500,0.0,28.34985144606286,High-dimensional dense covariance difference with matched trace; no mean difference.
-weak500,"Weak Case: d=500, Mean Gap Plus Tiny Dense Covariance Gap",500,1.0999999999999999,3.7941668062492058,High-dimensional case where the covariance gap is real but weaker than its estimation error.
+strong500,"Strong Case: d=500, Same Mean, Different Covariances",500,0.0,28.34985144606286,High-dimensional covariance difference with matched trace; no mean difference.
+weak500,"Weak Case: d=500, Mean Gap Plus Small Covariance Gap",500,1.0999999999999999,3.7941668062492058,High-dimensional case where the covariance gap is real but weaker than its estimation error.

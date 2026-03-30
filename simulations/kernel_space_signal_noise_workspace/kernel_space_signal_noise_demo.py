@@ -5,13 +5,13 @@ Kernel-space signal-vs-noise demo.
 
 This workspace intentionally focuses on two high-dimensional regimes:
 
-1. Strong kernel-space covariance signal:
-   A dense same-mean / different-covariance case in dimension 220.
+1. Strong feature-space covariance signal:
+   A high-dimensional same-mean / different-covariance case in dimension 220.
    The feature-space covariance gap is at least competitive with its estimation
    error, and KDMLP can beat KFDA.
 
-2. Weak kernel-space covariance signal:
-   A dense mean-gap / tiny-covariance-gap case in dimension 220.
+2. Weak feature-space covariance signal:
+   A high-dimensional mean-gap / small-covariance-gap case in dimension 220.
    The feature-space covariance gap is smaller than the estimation error, so
    the covariance part is not trustworthy on its own.
 
@@ -82,7 +82,7 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
 
     strong = base.Regime(
         name=f"strong{p}",
-        title=f"Strong Case: d={p}, Same Mean, Different Dense Covariances",
+        title=f"Strong Case: d={p}, Same Mean, Different Covariances",
         p=p,
         n_train_per_class=660,
         n_test_per_class=2500,
@@ -91,11 +91,11 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
         mean1=np.zeros(p),
         Sigma0=sigma_strong_0,
         Sigma1=sigma_strong_1,
-        note="High-dimensional dense covariance difference with matched trace; no mean difference.",
+        note="High-dimensional covariance difference with matched trace; no mean difference.",
     )
     weak = base.Regime(
         name=f"weak{p}",
-        title=f"Weak Case: d={p}, Mean Gap Plus Tiny Dense Covariance Gap",
+        title=f"Weak Case: d={p}, Mean Gap Plus Small Covariance Gap",
         p=p,
         n_train_per_class=660,
         n_test_per_class=2500,
@@ -176,10 +176,9 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
     ax.axhline(float(kfda["mean"]), color=colors["KFDA-1D"], linestyle="--", linewidth=2.2, label="KFDA-1D")
     for variant in ("MY-large_mu", "MY-small_mu"):
         cur = sub[sub["variant"] == variant].sort_values("r")
-        ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=variant)
+        ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    strong_title = str(sub["regime"].iloc[0]) if "regime" in sub.columns and len(sub) else "strong"
-    ax.set_title(f"{strong_title}\nBest nested-selected stage-1 kernel")
+    ax.set_title("Covariance signal is strong enough\nBest nested-selected stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_ylabel("test accuracy")
     ax.set_xticks(list(R_VALUES))
@@ -192,10 +191,9 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
     ax.axhline(float(kfda["mean"]), color=colors["KFDA-1D"], linestyle="--", linewidth=2.2, label="KFDA-1D")
     for variant in ("MY-large_mu", "MY-small_mu"):
         cur = sub[sub["variant"] == variant].sort_values("r")
-        ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=variant)
+        ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    weak_title = str(sub["regime"].iloc[0]) if "regime" in sub.columns and len(sub) else "weak"
-    ax.set_title(f"{weak_title}\nCovariance signal below noise floor")
+    ax.set_title("Covariance signal is small relative to noise\nBest nested-selected stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_xticks(list(R_VALUES))
     ax.legend(frameon=True, fontsize=9)
@@ -257,7 +255,7 @@ def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_p
         for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
             idx = y == cls
             ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-        ax.set_title(f"Strong case\n{variant}, r={r}\nacc={acc_val:.3f}")
+        ax.set_title(f"Covariance signal is strong enough\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
         ax.set_xlabel("2D view 1")
         ax.set_ylabel("2D view 2")
     axes[0, 0].legend(frameon=True, fontsize=9)
@@ -277,7 +275,9 @@ def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_p
         for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
             idx = y == cls
             ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-        ax.set_title(f"Weak case\n{variant}, r={r}\nacc={acc_val:.3f}\n{payload['stage1_label']}")
+        ax.set_title(
+            f"Covariance signal is small relative to noise\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}\n{payload['stage1_label']}"
+        )
         ax.set_xlabel("2D view 1")
         ax.set_ylabel("2D view 2")
 

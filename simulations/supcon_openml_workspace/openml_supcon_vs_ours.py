@@ -24,6 +24,13 @@ from compare_supcon_vs_ours import load_notebook_namespace, train_supcon_feature
 
 sns.set_theme(style="whitegrid", context="talk")
 
+DISPLAY_METHOD = {
+    "KFDA-1D": "KFDA-1D",
+    "MY-large_mu": "KDMLP large",
+    "MY-small_mu": "KDMLP small",
+    "SupCon": "SupCon",
+}
+
 
 OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
 
@@ -194,7 +201,7 @@ def run_openml_experiment():
         plot_rows.extend(
             [
                 {"dataset": row["dataset"], "method": "KFDA-1D", "acc": row["kfda_acc"]},
-                {"dataset": row["dataset"], "method": row["my_best_family"], "acc": row["my_best_acc"]},
+                {"dataset": row["dataset"], "method": DISPLAY_METHOD.get(row["my_best_family"], row["my_best_family"]), "acc": row["my_best_acc"]},
                 {"dataset": row["dataset"], "method": "SupCon", "acc": row["supcon_acc"]},
             ]
         )

@@ -15,4 +15,4 @@ Outputs:
 - `outputs_hd220/hd220_summary.csv`
 - `outputs_hd220/hd220_accuracy_bar.png`
 
-This compares `KFDA-1D`, `MY-large_mu`, `MY-small_mu`, and a feature-level `SupCon` baseline on the Gaussian synthetic regimes reused from the redo projection experiments.
+This compares `KFDA-1D`, `KDMLP large`, `KDMLP small`, and a feature-level `SupCon` baseline on the Gaussian synthetic regimes reused from the redo projection experiments.
