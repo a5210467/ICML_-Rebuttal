@@ -1,6 +1,6 @@
 # Feature-Space Signal/Noise Workspace
 
-This folder isolates two different covariance-signal situations. The default run is at dimension `220`, and a higher-dimensional supplementary run is provided at `d=500` with `repeats=3`.
+This folder isolates two different covariance-signal situations using one fixed linear stage-1 kernel. The default run is at dimension `220`, and a higher-dimensional supplementary run is provided at `d=500` with `repeats=3`.
 
 - a strong feature-space covariance-signal case where KDMLP can beat KFDA
 - a weak feature-space covariance-signal case where covariance estimation noise is larger than the true gap
@@ -33,12 +33,12 @@ python kernel_space_signal_noise_demo.py --dimension 500 --repeats 3 --output-su
 - `outputs/projection_views.png`
 - `outputs_d500_r3/`
 
-The figures below use the default `d=220` run in `outputs/`, since it gives the cleaner strong `>1` versus weak `\approx 0.5` signal/noise contrast. The `d=500` run remains available in `outputs_d500_r3/` as a supplementary check.
+The figures below use the default `d=220` run in `outputs/`, and they now show only the linear stage-1 kernel. This gives one direct comparison where the strong case has true linear feature covariance signal above estimation error and the weak case has signal below error. The `d=500` run remains available in `outputs_d500_r3/` as a supplementary check.
 
-| Label | Representative kernel | True feature covariance difference | Feature covariance error | Relation |
+| Label | Stage-1 kernel | True feature covariance difference | Feature covariance error | Relation |
 | --- | --- | ---: | ---: | --- |
-| A | sigmoid | 0.0819 | 0.0641 | signal > error |
-| B | sigmoid | 0.0290 | 0.0649 | signal < error |
+| A | linear | 23.8899 | 23.3499 | signal > error |
+| B | linear | 10.4546 | 23.7135 | signal < error |
 
 ![Case-level feature covariance signal vs error](outputs/signal_noise_case_summary.png)
 
@@ -51,9 +51,9 @@ The figures below use the default `d=220` run in `outputs/`, since it gives the 
 - The displayed default figures are built at `d=220`; a supplementary `d=500`, `repeats=3` run is also provided in `outputs_d500_r3/`.
 - The strong case is a high-dimensional same-mean / different-covariance regime.
 - The weak case is a high-dimensional mean-gap / small-covariance-gap regime.
-- The comparison is driven by the feature-space diagnostics:
+- The comparison is driven by the linear feature-space diagnostics:
   `ref_D_sigma_feature` versus `cov_gap_error_feature`.
-- In the strong case, the best feature-space signal-to-error ratio is `1.279`, and KDMLP improves over KFDA (`0.596` vs `0.513`).
-- In the weak case, the covariance part stays below the noise floor at about `0.447`; the final accuracy can still be influenced by the mean-separation part of the method (`0.683` vs `0.648` for KFDA).
+- In the strong case, the linear feature-space covariance difference is slightly larger than its estimation error (`23.8899` vs `23.3499`, ratio `1.023`), and KDMLP improves over KFDA (`0.575` vs `0.513`).
+- In the weak case, the linear covariance part stays below the noise floor (`10.4546` vs `23.7135`, ratio `0.441`); the final accuracy can still be influenced by the mean-separation part of the method (`0.683` vs `0.648` for KFDA).
 - The companion Gaussian sweep in `simulations/redo_projection_workspace` now enforces `r <= p` for every stage-1 kernel and uses a moderate default `p=120`. In that sweep, the weak-gap regime reaches its best KDMLP accuracy at very small `r` (`0.624` at `r=2`, versus `0.518` for `KFDA-1D`), which is consistent with a setting where the mean-separation component matters more than large covariance-sensitive expansions.
 - The higher-dimensional supplementary run is included in `outputs_d500_r3`, where `d=500` and `repeats=3`. In that run, the strong case still favors KDMLP (`0.579` vs `0.529` for KFDA), while the weak case still has feature-space signal below covariance error and is helped by the mean-separation component of `KDMLP large`.

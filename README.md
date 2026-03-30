@@ -62,27 +62,27 @@ This timing pattern matches the corrected statistical story in the plots: KDMLP 
 
 Workspace: `simulations/kernel_space_signal_noise_workspace`
 
-This workspace is a diagnostic companion to the Gaussian experiments. KDMLP is designed to capture class-separation information carried by the difference between class covariance matrices, which is not directly exploited by KFDA. Therefore, KDMLP is expected to help when the covariance difference contains meaningful discriminative structure. However, in data-driven settings the true covariance operators are unknown, and any method must rely on finite-sample estimates. Even in the extreme case where the true covariance matrices are identical, the sample covariance matrices will almost surely differ due to estimation noise. A method that explicitly tries to leverage this artifactual difference can therefore generalize worse than FDA or KFDA, which are better aligned with a shared-covariance regime. More broadly, KDMLP should not be expected to uniformly outperform KFDA on arbitrary datasets. It is best suited to problems where covariance differences provide useful class-separation information beyond mean separation, and where the true covariance-gap signal is not overwhelmed by covariance estimation error. In this workspace, that trade-off is summarized by comparing the feature-space covariance-gap magnitude to its estimation error, measured in the Hilbert-Schmidt norm.
+This workspace is a diagnostic companion to the Gaussian experiments, but the presentation here is intentionally kept to one clean linear-kernel story. KDMLP is designed to use class-separation information carried by the difference between class covariance matrices, whereas KFDA primarily follows the mean-separation direction. The practical issue is that with finite training data, the covariance difference that KDMLP sees is always a mixture of true covariance signal and covariance-estimation error. Therefore, the most meaningful comparison is whether the true linear feature-space covariance difference is larger than its estimation error. If it is, KDMLP has a stable covariance signal to use; if it is not, any covariance-sensitive gain should be interpreted cautiously rather than as a clean covariance effect.
 
-| Label | Case | Best feature-space signal / noise | KFDA-1D | Best KDMLP |
+| Label | Case | Linear feature signal / error | KFDA-1D | Best KDMLP |
 | --- | ---: | ---: | ---: |
-| A | Strong feature covariance signal (`d=220`) | 1.279 | 0.513 | 0.596 |
-| B | Weak feature covariance signal (`d=220`) | 0.447 | 0.648 | 0.683 |
+| A | Strong feature covariance signal (`d=220`) | 1.023 | 0.513 | 0.575 |
+| B | Weak feature covariance signal (`d=220`) | 0.441 | 0.648 | 0.683 |
 
-The plots below now show the default `d=220` comparison, because it gives the cleaner signal/noise contrast. In that run, the strong case has a best feature-space signal-to-noise ratio of `1.279`, so the covariance gap is genuinely more stable than its estimation error and KDMLP improves over KFDA (`0.596` vs `0.513`). The weak case stays around `0.45`, so the covariance part remains below the noise floor; there the best KDMLP result (`0.683` vs `0.648` for KFDA) should be read as a joint mean/covariance effect rather than as a pure covariance win. The higher-dimensional `d=500` run is still kept in the workspace as a supplementary check.
+The plots below now show only the linear stage-1 kernel at the default `d=220`, because it gives the cleanest direct comparison between true covariance signal and covariance-estimation error. In Case A, the linear feature-space covariance difference is slightly larger than the error (`23.890` vs `23.350`, ratio `1.023`), and KDMLP improves over KFDA (`0.575` vs `0.513`). In Case B, the linear feature-space covariance difference is smaller than the error (`10.455` vs `23.714`, ratio `0.441`), so the covariance part is below the noise floor; there the best KDMLP result (`0.683` vs `0.648` for KFDA) should be read as a joint mean/covariance effect rather than as a pure covariance win. The higher-dimensional `d=500` run is still kept in the workspace as a supplementary check.
 
-| Label | Representative kernel | True feature covariance difference | Feature covariance error | Relation |
+| Label | Stage-1 kernel | True feature covariance difference | Feature covariance error | Relation |
 | --- | --- | ---: | ---: | --- |
-| A | sigmoid | 0.0819 | 0.0641 | signal > error |
-| B | sigmoid | 0.0290 | 0.0649 | signal < error |
+| A | linear | 23.8899 | 23.3499 | signal > error |
+| B | linear | 10.4546 | 23.7135 | signal < error |
 
-This case-level table makes the intended separation explicit: in Case A, the true feature-space covariance difference is larger than the estimation error, whereas in Case B it is smaller.
+This case-level table makes the intended separation explicit in one fixed linear setting: in Case A, the true feature-space covariance difference is larger than the estimation error, whereas in Case B it is smaller.
 
 ![Case-level feature covariance signal vs error](simulations/kernel_space_signal_noise_workspace/outputs/signal_noise_case_summary.png)
 
 ![Feature-space signal vs noise](simulations/kernel_space_signal_noise_workspace/outputs/feature_space_signal_vs_noise.png)
 
-The corresponding accuracy curves make the same point from the prediction side: when the covariance signal is stable, KDMLP can improve over KFDA, while in the weak-signal setting the behavior is much less robust and should be interpreted together with the covariance-error diagnostic above.
+The corresponding accuracy curves make the same point from the prediction side under the same linear stage-1 kernel: when the covariance signal is stable, KDMLP can improve over KFDA, while in the weak-signal setting the behavior is much less robust and should be interpreted together with the covariance-error diagnostic above.
 
 ![Feature-space accuracy curves](simulations/kernel_space_signal_noise_workspace/outputs/accuracy_curves.png)
 
