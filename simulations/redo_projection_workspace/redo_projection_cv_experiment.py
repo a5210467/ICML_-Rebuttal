@@ -44,7 +44,7 @@ VARIANT_DISPLAY = {
 }
 # Default ladder used across Gaussian reruns. The effective grid is always
 # capped by the original dimension p so that r remains a true reduction size.
-R_VALUES = (1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32)
+R_VALUES = (1, 2, 3, 4, 6, 8, 10, 12, 16, 24, 32)
 
 
 sns.set_theme(style="whitegrid", context="talk")
@@ -1088,12 +1088,12 @@ def build_regime_table(regimes) -> pd.DataFrame:
 
 def main():
     parser = argparse.ArgumentParser(description="Gaussian KDMLP vs KFDA sweep.")
-    parser.add_argument("--dimension", type=int, default=20, help="Original Gaussian input dimension p.")
-    parser.add_argument("--repeats", type=int, default=3, help="Number of repeated train/test splits.")
+    parser.add_argument("--dimension", type=int, default=120, help="Original Gaussian input dimension p.")
+    parser.add_argument("--repeats", type=int, default=1, help="Number of repeated train/test splits.")
     parser.add_argument(
         "--r-values",
         type=str,
-        default="1,2,3,4,5,6,7,8,10,12,14,16,20,24,28,32",
+        default="1,2,3,4,6,8,10,12,16,24,32",
         help="Comma-separated KDMLP target dimensions.",
     )
     parser.add_argument(
