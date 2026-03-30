@@ -6,11 +6,11 @@ Feature-space signal-vs-noise demo.
 This workspace intentionally fixes the stage-1 kernel to linear and then studies
 two high-dimensional regimes:
 
-1. Strong feature-space covariance signal:
+1. Large covariance case:
    same mean / different covariance, with the true covariance difference larger
    than its estimation error.
 
-2. Weak feature-space covariance signal:
+2. Small covariance case:
    mean gap / small covariance gap, with the true covariance difference smaller
    than its estimation error.
 
@@ -52,10 +52,10 @@ def build_terminal_summary(df_strong_acc: pd.DataFrame, df_weak_acc: pd.DataFram
     strong_ratio = float(df_signal_noise[df_signal_noise["case"] == "strong_feature_covariance_signal"]["signal_to_noise_ratio"].iloc[0])
     weak_ratio = float(df_signal_noise[df_signal_noise["case"] == "weak_feature_covariance_signal"]["signal_to_noise_ratio"].iloc[0])
     return (
-        "Summary (linear stage-1 kernel only): in the strong case, the true feature covariance difference is larger than "
+        "Summary (linear stage-1 kernel only): in the large covariance case, the true feature covariance difference is larger than "
         f"its estimation error (ratio {strong_ratio:.3f}), and KDMLP improves over KFDA "
         f"({strong_best['mean']:.3f} vs {strong_kfda['mean']:.3f}). "
-        "In the weak case, the true feature covariance difference is smaller than its estimation error "
+        "In the small covariance case, the true feature covariance difference is smaller than its estimation error "
         f"(ratio {weak_ratio:.3f}), so the covariance part is below the noise floor; "
         f"the best KDMLP run reaches {weak_best['mean']:.3f} versus {weak_kfda['mean']:.3f} for KFDA, "
         "which should be read as a joint mean/covariance effect rather than as a pure covariance win."
@@ -66,10 +66,10 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
     rng = np.random.default_rng(seed)
     p = int(dimension)
 
-    sigma_strong_0 = base.random_dense_spd(rng, p, eig_low=0.6, eig_high=2.2)
+    sigma_strong_0 = base.random_dense_spd(rng, p, eig_low=0.5, eig_high=5.5)
     sigma_weak_0 = base.random_dense_spd(rng, p, eig_low=0.6, eig_high=2.1)
 
-    strong_T = base.dense_congruence_transform(rng, p, strength=0.95)
+    strong_T = base.dense_congruence_transform(rng, p, strength=4.5)
     weak_T = base.dense_congruence_transform(rng, p, strength=0.12)
 
     sigma_strong_1 = base.matched_trace_congruence(sigma_strong_0, strong_T)
@@ -78,21 +78,21 @@ def build_regimes(dimension: int = 220, seed: int = 20260327):
     v = base.random_unit_vector(rng, p)
 
     strong = base.Regime(
-        name=f"strong{p}",
-        title=f"Strong Case: d={p}, Same Mean, Different Covariances",
+        name=f"largecov{p}",
+        title=f"Large Covariance Case: d={p}, Same Mean, Different Covariances",
         p=p,
-        n_train_per_class=660,
+        n_train_per_class=1200,
         n_test_per_class=2500,
         n_ref_per_class=3000,
         mean0=np.zeros(p),
         mean1=np.zeros(p),
         Sigma0=sigma_strong_0,
         Sigma1=sigma_strong_1,
-        note="High-dimensional covariance difference with matched trace; no mean difference.",
+        note="High-dimensional large-covariance regime with matched trace; no mean difference.",
     )
     weak = base.Regime(
-        name=f"weak{p}",
-        title=f"Weak Case: d={p}, Mean Gap Plus Small Covariance Gap",
+        name=f"smallcov{p}",
+        title=f"Small Covariance Case: d={p}, Mean Gap Plus Small Covariance Gap",
         p=p,
         n_train_per_class=660,
         n_test_per_class=2500,
@@ -233,8 +233,8 @@ def collapse_by_kernel(df_cov_summary: pd.DataFrame) -> pd.DataFrame:
 def build_case_signal_summary(df_signal_noise: pd.DataFrame) -> pd.DataFrame:
     rows = []
     case_map = {
-        "strong_feature_covariance_signal": ("A", "Strong feature covariance signal"),
-        "weak_feature_covariance_signal": ("B", "Weak feature covariance signal"),
+        "strong_feature_covariance_signal": ("A", "Large covariance case"),
+        "weak_feature_covariance_signal": ("B", "Small covariance case"),
     }
     for case, (label, title) in case_map.items():
         sub = df_signal_noise[df_signal_noise["case"] == case].copy()
@@ -268,7 +268,7 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("Strong Case\nLinear stage-1 kernel")
+    ax.set_title("A: Large covariance case\nLinear stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_ylabel("test accuracy")
     ax.set_xticks(list(R_VALUES))
@@ -283,7 +283,7 @@ def plot_accuracy_curves(strong_acc: pd.DataFrame, weak_acc: pd.DataFrame):
         cur = sub[sub["variant"] == variant].sort_values("r")
         ax.plot(cur["r"], cur["mean"], marker="o", linewidth=2.2, color=colors[variant], label=base.variant_display(variant))
         ax.fill_between(cur["r"], cur["mean"] - cur["std"], cur["mean"] + cur["std"], alpha=0.18, color=colors[variant])
-    ax.set_title("Weak Case\nLinear stage-1 kernel")
+    ax.set_title("B: Small covariance case\nLinear stage-1 kernel")
     ax.set_xlabel("projection dimension r")
     ax.set_xticks(list(R_VALUES))
     ax.legend(frameon=True, fontsize=9)
@@ -317,8 +317,8 @@ def plot_signal_vs_noise(strong_cov: pd.DataFrame, weak_cov: pd.DataFrame):
                     tick.set_color("#7c3aed")
                     tick.set_fontweight("bold")
 
-    one_panel(axes[0], strong_cov, "Strong case (linear kernel)\ntrue covariance difference > error", highlight_kernel=LINEAR_KERNEL)
-    one_panel(axes[1], weak_cov, "Weak case (linear kernel)\ntrue covariance difference < error", highlight_kernel=LINEAR_KERNEL)
+    one_panel(axes[0], strong_cov, "A: Large covariance case (linear kernel)\ntrue covariance difference > error", highlight_kernel=LINEAR_KERNEL)
+    one_panel(axes[1], weak_cov, "B: Small covariance case (linear kernel)\ntrue covariance difference < error", highlight_kernel=LINEAR_KERNEL)
 
     fig.tight_layout()
     out = OUT_DIR / "feature_space_signal_vs_noise.png"
@@ -393,7 +393,7 @@ def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_p
         for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
             idx = y == cls
             ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-        ax.set_title(f"Strong case, linear kernel\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
+        ax.set_title(f"Large covariance case, linear kernel\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
         ax.set_xlabel("2D view 1")
         ax.set_ylabel("2D view 2")
     axes[0, 0].legend(frameon=True, fontsize=9)
@@ -413,7 +413,7 @@ def plot_projection_views(strong_payload: dict, strong_acc: pd.DataFrame, weak_p
         for cls, color, label in [(0, "#1f77b4", "class 0"), (1, "#d62728", "class 1")]:
             idx = y == cls
             ax.scatter(Z2[idx, 0], Z2[idx, 1], s=10, alpha=0.55, c=color, label=label)
-        ax.set_title(f"Weak case, linear kernel\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
+        ax.set_title(f"Small covariance case, linear kernel\n{base.variant_display(variant)}, r={r}\nacc={acc_val:.3f}")
         ax.set_xlabel("2D view 1")
         ax.set_ylabel("2D view 2")
 

@@ -66,14 +66,14 @@ This workspace is a diagnostic companion to the Gaussian experiments, but the pr
 
 | Label | Case | Linear feature signal / error | KFDA-1D | Best KDMLP |
 | --- | ---: | ---: | ---: |
-| A | Strong feature covariance signal (`d=220`) | 1.023 | 0.513 | 0.575 |
-| B | Weak feature covariance signal (`d=220`) | 0.441 | 0.648 | 0.683 |
+| A | Large covariance case (`d=220`) | 3.266 | 0.781 | 0.898 |
+| B | Small covariance case (`d=220`) | 0.441 | 0.648 | 0.683 |
 
-The plots below now show only the linear stage-1 kernel at the default `d=220`, because it gives the cleanest direct comparison between true covariance signal and covariance-estimation error. In Case A, the linear feature-space covariance difference is slightly larger than the error (`23.890` vs `23.350`, ratio `1.023`), and KDMLP improves over KFDA (`0.575` vs `0.513`). In Case B, the linear feature-space covariance difference is smaller than the error (`10.455` vs `23.714`, ratio `0.441`), so the covariance part is below the noise floor; there the best KDMLP result (`0.683` vs `0.648` for KFDA) should be read as a joint mean/covariance effect rather than as a pure covariance win. The higher-dimensional `d=500` run is still kept in the workspace as a supplementary check.
+The plots below now show only the linear stage-1 kernel at the default `d=220`, because it gives the cleanest direct comparison between true covariance signal and covariance-estimation error. In Case A, the large covariance case has a linear feature-space covariance difference that is far larger than the error (`109.015` vs `33.380`, ratio `3.266`), and KDMLP improves clearly over KFDA (`0.898` vs `0.781`). In Case B, the linear feature-space covariance difference is smaller than the error (`10.455` vs `23.714`, ratio `0.441`), so the covariance part is below the noise floor; there the best KDMLP result (`0.683` vs `0.648` for KFDA) should be read as a joint mean/covariance effect rather than as a pure covariance win. The higher-dimensional `d=500` run is still kept in the workspace as a supplementary check.
 
 | Label | Stage-1 kernel | True feature covariance difference | Feature covariance error | Relation |
 | --- | --- | ---: | ---: | --- |
-| A | linear | 23.8899 | 23.3499 | signal > error |
+| A | linear | 109.0150 | 33.3802 | signal > error |
 | B | linear | 10.4546 | 23.7135 | signal < error |
 
 This case-level table makes the intended separation explicit in one fixed linear setting: in Case A, the true feature-space covariance difference is larger than the estimation error, whereas in Case B it is smaller.
