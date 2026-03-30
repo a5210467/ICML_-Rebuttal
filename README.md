@@ -110,7 +110,7 @@ This workspace extends the same-`r` comparison to OpenML binary classification t
 
 Workspace: `simulations/supcon_cifar100_workspace`
 
-These experiments search binary CIFAR-100 tasks and then rerun the most interesting ones with the same final dimension `r` for both methods. The most useful pairs show that `KDMLP large` can outperform SupCon while still using a small or moderate target dimension.
+These experiments compare a selected set of binary CIFAR-100 tasks, using the same final dimension `r` for both methods. The most useful pairs show that `KDMLP large` can outperform SupCon while still using a small or moderate target dimension.
 
 | Label | Task | Best `r` | Best KDMLP | SupCon |
 | --- | --- | ---: | ---: | ---: |

@@ -13,4 +13,4 @@ Outputs:
 - `outputs/cifar100_margin_plot.png`
 - best-pair plots such as `outputs/beaver_vs_possum_accuracy_bar.png`
 
-This scans a set of CIFAR-100 binary pairs with a quick pass, then re-checks the strongest pairs with stronger settings.
+This workspace compares a selected set of CIFAR-100 binary pairs, then reports the most useful same-`r` comparisons with stronger settings.
