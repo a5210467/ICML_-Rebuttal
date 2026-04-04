@@ -1,4 +1,12 @@
 task,class0,class1,method,r,acc_mean,acc_std
+CIFAR100: beaver vs possum,beaver,possum,KFDA,1,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,2,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,3,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,4,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,5,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,6,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,32,0.8359375,0.011048543456039806
+CIFAR100: beaver vs possum,beaver,possum,KFDA,64,0.8359375,0.011048543456039806
 CIFAR100: beaver vs possum,beaver,possum,MY-large_mu,1,0.8984375,0.03314563036811941
 CIFAR100: beaver vs possum,beaver,possum,MY-large_mu,2,0.90625,0.02209708691207961
 CIFAR100: beaver vs possum,beaver,possum,MY-large_mu,3,0.90625,0.02209708691207961

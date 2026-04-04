@@ -16,13 +16,31 @@ from torchvision import datasets
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs_same_r"
 OUT.mkdir(parents=True, exist_ok=True)
 PAIR_CACHE = OUT / "pair_cache"
 PAIR_CACHE.mkdir(parents=True, exist_ok=True)
-VISION_ROOT = ROOT / "modern_benchmark_data" / "vision"
+for candidate in (
+    ROOT / "modern_benchmark_data" / "vision",
+    REPO_ROOT / "modern_benchmark_data" / "vision",
+    PROJECT_ROOT / "modern_benchmark_data" / "vision",
+):
+    if candidate.exists():
+        VISION_ROOT = candidate
+        break
+else:
+    VISION_ROOT = ROOT / "modern_benchmark_data" / "vision"
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
+for candidate in (
+    ROOT / "supcon_comparison_workspace",
+    REPO_ROOT / "supcon_comparison_workspace",
+    PROJECT_ROOT / "supcon_comparison_workspace",
+):
+    if candidate.exists():
+        sys.path.insert(0, str(candidate))
+        break
 
 from compare_supcon_vs_ours import (  # type: ignore
     NOTEBOOK_PATH,
@@ -67,13 +85,13 @@ def build_same_r_cifar_summary(df_all_compact: pd.DataFrame) -> str:
     non_sat = df_all_compact[df_all_compact[["my_best_acc", "supcon_acc"]].max(axis=1) < 0.995].copy()
     source = non_sat if len(non_sat) else df_all_compact
     best = source.sort_values("margin_vs_supcon", ascending=False).iloc[0]
-    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc"]].mean()
+    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc", "kfda_acc"]].mean()
     top_r = mean_curve.assign(margin=mean_curve["my_best_acc"] - mean_curve["supcon_acc"]).sort_values("margin", ascending=False).iloc[0]
     return (
         f"Summary: the most informative same-r CIFAR-100 pair here is {best['task']}, where KDMLP reaches {best['my_best_acc']:.3f} "
-        f"against SupCon at {best['supcon_acc']:.3f} with r={int(best['r'])}. "
+        f"against SupCon at {best['supcon_acc']:.3f} and KFDA at {best['kfda_acc']:.3f} with r={int(best['r'])}. "
         f"Averaged across the selected pairs, the largest mean same-r margin occurs at r={int(top_r['r'])} "
-        f"with KDMLP-minus-SupCon = {top_r['margin']:+.3f}."
+        f"with KDMLP-minus-SupCon = {top_r['margin']:+.3f}. Binary KFDA contributes a flat same-r reference because it has only one non-zero discriminant direction."
     )
 
 
@@ -223,6 +241,20 @@ def evaluate_fixed_r_pair(ns: dict, *, class0: str, class1: str, device: str, se
                     "kernel": str(best_kfda["stage1_kernel"]),
                 }
             )
+            for r in R_VALUES:
+                same_r_rows.append(
+                    {
+                        "task": meta["task_name"],
+                        "class0": class0,
+                        "class1": class1,
+                        "rep": rep,
+                        "method": "KFDA",
+                        "family": "KFDA",
+                        "r": int(r),
+                        "acc": float(best_kfda["acc"]),
+                        "kernel": str(best_kfda["stage1_kernel"]),
+                    }
+                )
 
         for family, algo in [("MY-large_mu", "large_mu"), ("MY-small_mu", "small_mu")]:
             fam_rows = []
@@ -287,10 +319,12 @@ def summarize_pair(exp: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
     large = acc_summary[acc_summary["method"] == "MY-large_mu"][["task", "class0", "class1", "r", "acc_mean"]].rename(columns={"acc_mean": "my_large_acc"})
     small = acc_summary[acc_summary["method"] == "MY-small_mu"][["task", "class0", "class1", "r", "acc_mean"]].rename(columns={"acc_mean": "my_small_acc"})
     sup = acc_summary[acc_summary["method"] == "SupCon"][["task", "class0", "class1", "r", "acc_mean"]].rename(columns={"acc_mean": "supcon_acc"})
-    compact = large.merge(small, on=["task", "class0", "class1", "r"]).merge(sup, on=["task", "class0", "class1", "r"])
+    kfda = acc_summary[acc_summary["method"] == "KFDA"][["task", "class0", "class1", "r", "acc_mean"]].rename(columns={"acc_mean": "kfda_acc"})
+    compact = large.merge(small, on=["task", "class0", "class1", "r"]).merge(sup, on=["task", "class0", "class1", "r"]).merge(kfda, on=["task", "class0", "class1", "r"])
     compact["my_best_acc"] = compact[["my_large_acc", "my_small_acc"]].max(axis=1)
     compact["my_best_family"] = np.where(compact["my_large_acc"] >= compact["my_small_acc"], "MY-large_mu", "MY-small_mu")
     compact["margin_vs_supcon"] = compact["my_best_acc"] - compact["supcon_acc"]
+    compact["margin_vs_kfda"] = compact["my_best_acc"] - compact["kfda_acc"]
     return acc_summary, compact
 
 
@@ -299,15 +333,11 @@ def plot_pair(exp: dict, acc_summary: pd.DataFrame, compact: pd.DataFrame):
     class0, class1 = meta["class_names"]
     tag = f"{_slug(class0)}_vs_{_slug(class1)}"
 
-    df_kfda = exp["kfda_rows"]
-    kfda_mean = float(df_kfda["acc"].mean()) if not df_kfda.empty else np.nan
-
     fig, ax = plt.subplots(figsize=(9, 5))
-    for method, color in [("MY-large_mu", "#43aa8b"), ("MY-small_mu", "#f8961e"), ("SupCon", "#f94144")]:
+    for method, color, linestyle in [("KFDA", "#577590", "--"), ("MY-large_mu", "#43aa8b", "-"), ("MY-small_mu", "#f8961e", "-"), ("SupCon", "#f94144", "-")]:
         sub = acc_summary[acc_summary["method"] == method].sort_values("r")
-        ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, label=method, color=color)
-    if np.isfinite(kfda_mean):
-        ax.axhline(kfda_mean, linestyle="--", color="#577590", label="KFDA-1D")
+        if len(sub):
+            ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, linestyle=linestyle, label=method, color=color)
     ax.set_xlabel("Reduced dimension r")
     ax.set_ylabel("Accuracy")
     ax.set_title(meta["task_name"])
@@ -320,13 +350,14 @@ def plot_pair(exp: dict, acc_summary: pd.DataFrame, compact: pd.DataFrame):
     if not sub.empty:
         fig, ax = plt.subplots(figsize=(8, 5))
         x = np.arange(len(sub))
-        width = 0.36
-        ax.bar(x - width / 2, sub["my_best_acc"], width=width, color="#43aa8b", label="MY-best")
-        ax.bar(x + width / 2, sub["supcon_acc"], width=width, color="#f94144", label="SupCon")
+        width = 0.26
+        ax.bar(x - width, sub["my_best_acc"], width=width, color="#43aa8b", label="MY-best")
+        ax.bar(x, sub["supcon_acc"], width=width, color="#f94144", label="SupCon")
+        ax.bar(x + width, sub["kfda_acc"], width=width, color="#577590", label="KFDA")
         ax.set_xticks(x, [f"r={int(r)}" for r in sub["r"]])
         ax.set_ylabel("Accuracy")
-        ax.set_ylim(max(0.45, float(min(sub["supcon_acc"].min(), sub["my_best_acc"].min()) - 0.05)), 1.02)
-        ax.set_title(f"{meta['task_name']}: MY-best vs SupCon at r=32,64")
+        ax.set_ylim(max(0.45, float(min(sub["supcon_acc"].min(), sub["my_best_acc"].min(), sub["kfda_acc"].min()) - 0.05)), 1.02)
+        ax.set_title(f"{meta['task_name']}: KDMLP vs SupCon vs KFDA at r=32,64")
         ax.legend()
         plt.tight_layout()
         fig.savefig(OUT / f"{tag}_dim32_64_bar.png", dpi=180)
@@ -362,12 +393,13 @@ def main():
     df_all_compact.to_csv(OUT / "cifar100_same_r_compact_all.csv", index=False)
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc"]].mean()
+    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc", "kfda_acc"]].mean()
     ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.5, label="MY-best mean", color="#43aa8b")
     ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.5, label="SupCon mean", color="#f94144")
+    ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.5, linestyle="--", label="KFDA mean", color="#577590")
     ax.set_xlabel("Reduced dimension r")
     ax.set_ylabel("Mean accuracy across selected CIFAR-100 pairs")
-    ax.set_title("Same-r CIFAR-100 comparison")
+    ax.set_title("Same-r CIFAR-100 comparison (KDMLP vs SupCon vs KFDA)")
     ax.legend()
     plt.tight_layout()
     fig.savefig(OUT / "cifar100_same_r_mean_curve.png", dpi=180)

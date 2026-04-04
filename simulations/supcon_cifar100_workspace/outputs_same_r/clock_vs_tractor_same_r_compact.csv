@@ -1,9 +1,9 @@
-task,class0,class1,r,my_large_acc,my_small_acc,supcon_acc,my_best_acc,my_best_family,margin_vs_supcon
-CIFAR100: clock vs tractor,clock,tractor,1,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,2,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,3,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,4,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,5,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,6,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,32,1.0,0.5,1.0,1.0,MY-large_mu,0.0
-CIFAR100: clock vs tractor,clock,tractor,64,1.0,0.5,1.0,1.0,MY-large_mu,0.0
+task,class0,class1,r,my_large_acc,my_small_acc,supcon_acc,kfda_acc,my_best_acc,my_best_family,margin_vs_supcon,margin_vs_kfda
+CIFAR100: clock vs tractor,clock,tractor,1,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,2,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,3,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,4,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,5,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,6,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,32,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,64,1.0,0.5,1.0,1.0,1.0,MY-large_mu,0.0,0.0

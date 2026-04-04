@@ -15,10 +15,19 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs_same_r"
 OUT.mkdir(parents=True, exist_ok=True)
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
+for candidate in (
+    ROOT / "supcon_comparison_workspace",
+    REPO_ROOT / "supcon_comparison_workspace",
+    PROJECT_ROOT / "supcon_comparison_workspace",
+):
+    if candidate.exists():
+        sys.path.insert(0, str(candidate))
+        break
 
 from compare_supcon_vs_ours import (  # type: ignore
     NOTEBOOK_PATH,
@@ -30,7 +39,16 @@ from compare_supcon_vs_ours import (  # type: ignore
 
 sns.set_theme(style="whitegrid", context="talk")
 
-OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
+for candidate in (
+    ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb",
+    REPO_ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb",
+    PROJECT_ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb",
+):
+    if candidate.exists():
+        OPENML_NOTEBOOK = candidate
+        break
+else:
+    OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
 R_VALUES = (1, 2, 3, 4, 5, 6, 32, 64)
 
 
@@ -58,11 +76,20 @@ def build_openml_same_r_summary(df_dim32_64: pd.DataFrame) -> str:
         sub = df_dim32_64[df_dim32_64["r"] == r]
         if len(sub) == 0:
             continue
-        wins = int((sub["my_best_acc"] > sub["supcon_acc"]).sum())
-        losses = int((sub["my_best_acc"] < sub["supcon_acc"]).sum())
-        mean_margin = float((sub["my_best_acc"] - sub["supcon_acc"]).mean())
-        lines.append(f"r={r}: KDMLP wins on {wins} datasets, loses on {losses}, mean margin {mean_margin:+.3f}")
-    return "Summary: " + "; ".join(lines) + "."
+        wins_sup = int((sub["my_best_acc"] > sub["supcon_acc"]).sum())
+        losses_sup = int((sub["my_best_acc"] < sub["supcon_acc"]).sum())
+        mean_margin_sup = float((sub["my_best_acc"] - sub["supcon_acc"]).mean())
+        wins_kfda = int((sub["my_best_acc"] > sub["kfda_acc"]).sum())
+        losses_kfda = int((sub["my_best_acc"] < sub["kfda_acc"]).sum())
+        mean_margin_kfda = float((sub["my_best_acc"] - sub["kfda_acc"]).mean())
+        lines.append(
+            f"r={r}: KDMLP beats SupCon on {wins_sup} datasets and KFDA on {wins_kfda} datasets "
+            f"(margins {mean_margin_sup:+.3f} vs SupCon, {mean_margin_kfda:+.3f} vs KFDA; "
+            f"losses {losses_sup} and {losses_kfda}, respectively)"
+        )
+    if not lines:
+        return "Summary: no r=32 or r=64 rows were generated."
+    return "Summary: " + "; ".join(lines) + ". Binary KFDA remains rank-1, so its same-r reference is repeated across the tested r grid."
 
 
 def load_openml_namespace(path: Path) -> dict:
@@ -86,6 +113,20 @@ def summarize_my_same_r(df_ours: pd.DataFrame) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     return df_best
+
+
+def summarize_kfda_same_r(df_ours: pd.DataFrame) -> pd.DataFrame:
+    df_mean = (
+        df_ours[df_ours["family"] == "KFDA"]
+        .groupby(["openml_id", "task", "stage1_kernel"], as_index=False)["acc"]
+        .agg(acc_mean="mean", acc_std=lambda s: float(np.std(s, ddof=1)) if len(s) > 1 else 0.0)
+    )
+    return (
+        df_mean.sort_values(["openml_id", "task", "acc_mean"], ascending=[True, True, False])
+        .groupby(["openml_id", "task"], as_index=False)
+        .head(1)
+        .reset_index(drop=True)
+    )
 
 
 def run_openml_same_r():
@@ -176,6 +217,7 @@ def run_openml_same_r():
     df_sup = pd.DataFrame(rows_sup)
 
     df_my_best = summarize_my_same_r(df_my)
+    df_kfda_best = summarize_kfda_same_r(df_my)
     df_sup_mean = (
         df_sup.groupby(["openml_id", "dataset", "r"], as_index=False)["acc"]
         .agg(acc_mean="mean", acc_std=lambda s: float(np.std(s, ddof=1)) if len(s) > 1 else 0.0)
@@ -185,9 +227,15 @@ def run_openml_same_r():
         my_large = df_my_best[(df_my_best["openml_id"] == openml_id) & (df_my_best["family"] == "MY-large_mu")][["r", "acc_mean"]].rename(columns={"acc_mean": "my_large_acc"})
         my_small = df_my_best[(df_my_best["openml_id"] == openml_id) & (df_my_best["family"] == "MY-small_mu")][["r", "acc_mean"]].rename(columns={"acc_mean": "my_small_acc"})
         sup_sub = df_sup_mean[(df_sup_mean["openml_id"] == openml_id)][["r", "acc_mean"]].rename(columns={"acc_mean": "supcon_acc"})
-        merged = my_large.merge(my_small, on="r", how="outer").merge(sup_sub, on="r", how="outer").sort_values("r")
+        kfda_row = df_kfda_best[df_kfda_best["openml_id"] == openml_id]
+        kfda_acc = float(kfda_row["acc_mean"].iloc[0]) if not kfda_row.empty else np.nan
+        kfda_kernel = str(kfda_row["stage1_kernel"].iloc[0]) if not kfda_row.empty else ""
+        kfda_sub = pd.DataFrame({"r": list(R_VALUES), "kfda_acc": [kfda_acc] * len(R_VALUES), "kfda_kernel": [kfda_kernel] * len(R_VALUES)})
+        merged = my_large.merge(my_small, on="r", how="outer").merge(sup_sub, on="r", how="outer").merge(kfda_sub, on="r", how="left").sort_values("r")
         merged["my_best_acc"] = merged[["my_large_acc", "my_small_acc"]].max(axis=1)
         merged["my_best_family"] = np.where(merged["my_large_acc"] >= merged["my_small_acc"], "MY-large_mu", "MY-small_mu")
+        merged["margin_vs_kfda"] = merged["my_best_acc"] - merged["kfda_acc"]
+        merged["margin_vs_supcon"] = merged["my_best_acc"] - merged["supcon_acc"]
         merged["openml_id"] = openml_id
         merged["dataset"] = dataset
         compact_rows.append(merged)
@@ -197,21 +245,23 @@ def run_openml_same_r():
 
     df_my.to_csv(OUT / "openml_my_full_same_r.csv", index=False)
     df_my_best.to_csv(OUT / "openml_my_best_same_r.csv", index=False)
+    df_kfda_best.to_csv(OUT / "openml_kfda_best_same_r.csv", index=False)
     df_sup_mean.to_csv(OUT / "openml_supcon_same_r.csv", index=False)
     df_compact.to_csv(OUT / "openml_same_r_compact.csv", index=False)
     df_dim32_64.to_csv(OUT / "openml_dim32_64_comparison.csv", index=False)
 
     fig, ax = plt.subplots(figsize=(10, 6))
     mean_curve = (
-        df_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc"]]
+        df_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc", "kfda_acc"]]
         .mean()
         .sort_values("r")
     )
     ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.5, color="#43aa8b", label="MY-best")
     ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.5, color="#f94144", label="SupCon")
+    ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.5, linestyle="--", color="#577590", label="KFDA")
     ax.set_xlabel("Dimension r")
     ax.set_ylabel("Mean accuracy across OpenML datasets")
-    ax.set_title("OpenML same-r comparison")
+    ax.set_title("OpenML same-r comparison (KDMLP vs SupCon vs KFDA)")
     ax.legend()
     plt.tight_layout()
     fig.savefig(OUT / "openml_same_r_mean_curve.png", dpi=180)
@@ -219,13 +269,13 @@ def run_openml_same_r():
 
     plot32 = df_dim32_64.melt(
         id_vars=["openml_id", "dataset", "r"],
-        value_vars=["my_best_acc", "supcon_acc"],
+        value_vars=["my_best_acc", "supcon_acc", "kfda_acc"],
         var_name="method",
         value_name="acc",
     )
     fig, ax = plt.subplots(figsize=(13, 7))
     sns.barplot(data=plot32, x="dataset", y="acc", hue="method", ax=ax)
-    ax.set_title("OpenML: MY-best vs SupCon at r=32 or 64")
+    ax.set_title("OpenML: KDMLP vs SupCon vs KFDA at r=32 or 64")
     ax.tick_params(axis="x", rotation=45)
     plt.tight_layout()
     fig.savefig(OUT / "openml_dim32_64_barplot.png", dpi=180)

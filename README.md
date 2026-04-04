@@ -100,31 +100,30 @@ This comparison uses the dimension-matched protocol: after SupCon training, its 
 
 ![Gaussian KDMLP vs SupCon](simulations/supcon_gaussian_workspace/outputs_dimmatch/same_r_accuracy_plot.png)
 
-## 4. OpenML KDMLP vs SupCon
+## 4. OpenML KDMLP vs SupCon (+ KFDA)
 
 Workspace: `simulations/supcon_openml_workspace`
 
-This workspace extends the same-`r` comparison to OpenML binary classification tasks. The strongest wins appear on datasets where a small number of KDMLP directions remains highly informative, while some datasets remain more sensitive to the chosen `r`.
+This workspace extends the same-`r` comparison to OpenML binary classification tasks. The strongest wins appear on datasets where a small number of KDMLP directions remains highly informative, while some datasets remain more sensitive to the chosen `r`. The updated same-`r` plots now include the binary KFDA reference across the tested `r` grid as well, repeated as a flat curve because binary KFDA contributes only one non-zero discriminant direction.
 
-| Label | Dataset | `r` | Best KDMLP | SupCon |
-| --- | --- | ---: | ---: | ---: |
-| A | breast-cancer | 64 | 0.722 | 0.600 |
-| B | Titanic | 64 | 0.950 | 0.899 |
-| C | hypothyroid | 64 | 0.977 | 0.969 |
-| D | sonar | 32 | 0.905 | 0.857 |
+| Label | Dataset | `r` | Best KDMLP | SupCon | KFDA |
+| --- | --- | ---: | ---: | ---: | ---: |
+| A | breast-cancer | 64 | 0.722 | 0.600 | 0.722 |
+| B | Titanic | 3 | 0.950 | 0.901 | 0.912 |
+| C | hypothyroid | 1 | 0.979 | 0.948 | 0.948 |
+| D | sonar | 32 | 0.905 | 0.857 | 0.655 |
 
-![OpenML KDMLP vs SupCon](simulations/supcon_openml_workspace/outputs_same_r/openml_same_r_mean_curve.png)
+![OpenML KDMLP vs SupCon vs KFDA](simulations/supcon_openml_workspace/outputs_same_r/openml_same_r_mean_curve.png)
 
-## 5. CIFAR-100 KDMLP vs SupCon
+## 5. CIFAR-100 KDMLP vs SupCon (+ KFDA)
 
 Workspace: `simulations/supcon_cifar100_workspace`
 
-These experiments compare a selected set of binary CIFAR-100 tasks, using the same final dimension `r` for both methods. The most useful pairs show that `KDMLP large` can outperform SupCon while still using a small or moderate target dimension.
+These experiments compare a selected set of binary CIFAR-100 tasks, using the same final dimension `r` for all three methods in the summary plots. The most useful pairs show that `KDMLP large` can outperform SupCon while still using a small or moderate target dimension, and the KFDA reference is now shown on the same `r` axis as a flat binary baseline.
 
-| Label | Task | Best `r` | Best KDMLP | SupCon |
-| --- | --- | ---: | ---: | ---: |
-| A | lion vs possum | 4 | 0.992 | 0.930 |
-| B | bee vs spider | 64 | 0.898 | 0.859 |
-| C | beaver vs possum | 2 | 0.906 | 0.844 |
+| Label | Task | Best `r` | Best KDMLP | SupCon | KFDA |
+| --- | --- | ---: | ---: | ---: | ---: |
+| A | beaver vs possum | 2 | 0.906 | 0.844 | 0.836 |
+| B | clock vs tractor | 1 | 1.000 | 1.000 | 1.000 |
 
-![CIFAR-100 KDMLP vs SupCon](simulations/supcon_cifar100_workspace/outputs_more_examples/cifar100_more_examples_same_r.png)
+![CIFAR-100 KDMLP vs SupCon vs KFDA](simulations/supcon_cifar100_workspace/outputs_same_r/cifar100_same_r_mean_curve.png)

@@ -1,4 +1,12 @@
 task,class0,class1,method,r,acc_mean,acc_std
+CIFAR100: clock vs tractor,clock,tractor,KFDA,1,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,2,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,3,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,4,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,5,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,6,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,32,1.0,0.0
+CIFAR100: clock vs tractor,clock,tractor,KFDA,64,1.0,0.0
 CIFAR100: clock vs tractor,clock,tractor,MY-large_mu,1,1.0,0.0
 CIFAR100: clock vs tractor,clock,tractor,MY-large_mu,2,1.0,0.0
 CIFAR100: clock vs tractor,clock,tractor,MY-large_mu,3,1.0,0.0
