@@ -42,6 +42,4 @@ The workspace now also exports all OpenML datasets one by one. Each dataset gets
 
 ![ringnorm feature covariance case](outputs/openml_feature_covariance_cases/ringnorm_feature_covariance_case.png)
 
-![diabetes feature covariance case](outputs/openml_feature_covariance_cases/diabetes_feature_covariance_case.png)
-
 ![CIFAR-100 r-growth examples](outputs/cifar100_r_growth_examples.png)
