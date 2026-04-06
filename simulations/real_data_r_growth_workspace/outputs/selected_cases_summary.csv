@@ -1,0 +1,5 @@
+domain,label,task,caption,r1,kdmlp_r1,best_r,kdmlp_best,kdmlp_gain,supcon_r1,supcon_best,kfda
+OpenML,A,sonar,larger r helps substantially,1,0.7976190476190477,32,0.9047619047619048,0.1071428571428571,0.6904761904761905,0.8690476190476191,0.6547619047619048
+OpenML,B,hypothyroid,larger r does not help much,1,0.979456593770709,1,0.979456593770709,0.0,0.94831013916501,0.9688535453943008,0.94831013916501
+CIFAR100,A,CIFAR100: lion vs possum,larger r helps substantially,1,0.953125,4,0.9921875,0.0390625,0.9296875,0.9453125,0.984375
+CIFAR100,B,CIFAR100: bear vs palm_tree,larger r does not help much,1,0.9921875,1,0.9921875,0.0,0.984375,0.9921875,0.984375

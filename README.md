@@ -14,6 +14,8 @@ This repository collects the new simulation and comparison code used for the ICM
   OpenML KDMLP vs supervised contrastive learning comparisons.
 - `simulations/supcon_cifar100_workspace`
   CIFAR-100 binary-pair KDMLP vs supervised contrastive learning scans and same-`r` comparisons.
+- `simulations/real_data_r_growth_workspace`
+  Focused real-data examples showing one case where increasing `r` helps and one where it does not.
 
 Each workspace keeps its own scripts, README, tables, and generated plots.
 
@@ -127,3 +129,22 @@ These experiments compare a selected set of binary CIFAR-100 tasks, using the sa
 | B | clock vs tractor | 1 | 1.000 | 1.000 | 1.000 |
 
 ![CIFAR-100 KDMLP vs SupCon vs KFDA](simulations/supcon_cifar100_workspace/outputs_same_r/cifar100_same_r_mean_curve.png)
+
+## 6. Real-Data Gains As `r` Increases
+
+Workspace: `simulations/real_data_r_growth_workspace`
+
+This reviewer-focused workspace isolates the main real-data question: when does increasing the KDMLP target dimension `r` materially help, and when does it not? For each domain we show one example with a clear gain from larger `r` and one example where the KDMLP curve is essentially flat. In all panels, KFDA is the flat binary reference and SupCon is shown on the same `r` grid for the same dataset.
+
+| Label | Domain | Task | `r=1` KDMLP | Best `r` | Best KDMLP | SupCon best | KFDA |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| A | OpenML | sonar | 0.798 | 32 | 0.905 | 0.869 | 0.655 |
+| B | OpenML | hypothyroid | 0.979 | 1 | 0.979 | 0.969 | 0.948 |
+| C | CIFAR-100 | lion vs possum | 0.953 | 4 | 0.992 | 0.945 | 0.984 |
+| D | CIFAR-100 | bear vs palm_tree | 0.992 | 1 | 0.992 | 0.992 | 0.984 |
+
+For OpenML, `sonar` is the clean positive example: KDMLP rises by about `+0.107` from `r=1` to its best point at `r=32`. By contrast, `hypothyroid` is essentially flat, so increasing `r` does not buy anything there. For CIFAR-100, `lion vs possum` shows the same positive pattern, while `bear vs palm_tree` is already near its ceiling at `r=1` and stays flat.
+
+![OpenML r-growth examples](simulations/real_data_r_growth_workspace/outputs/openml_r_growth_examples.png)
+
+![CIFAR-100 r-growth examples](simulations/real_data_r_growth_workspace/outputs/cifar100_r_growth_examples.png)
