@@ -159,5 +159,3 @@ The workspace also exports every OpenML dataset individually. The grid below sum
 ![banana feature covariance case](simulations/real_data_r_growth_workspace/outputs/openml_feature_covariance_cases/banana_feature_covariance_case.png)
 
 ![ringnorm feature covariance case](simulations/real_data_r_growth_workspace/outputs/openml_feature_covariance_cases/ringnorm_feature_covariance_case.png)
-
-![CIFAR-100 r-growth examples](simulations/real_data_r_growth_workspace/outputs/cifar100_r_growth_examples.png)

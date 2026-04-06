@@ -16,7 +16,6 @@ Outputs:
 - `outputs/openml_feature_covariance_cases/*_feature_covariance_case.png`
 - `outputs/cifar100_selected_curves.csv`
 - `outputs/openml_r_growth_examples.png`
-- `outputs/cifar100_r_growth_examples.png`
 
 This workspace answers a focused reviewer question using saved real-data results from the OpenML and CIFAR-100 comparisons. It shows one case where increasing the KDMLP target dimension `r` helps substantially and one case where it does not, while keeping the same SupCon curve and the flat binary KFDA reference on the same plot.
 
@@ -41,5 +40,3 @@ The workspace now also exports all OpenML datasets one by one. Each dataset gets
 ![banana feature covariance case](outputs/openml_feature_covariance_cases/banana_feature_covariance_case.png)
 
 ![ringnorm feature covariance case](outputs/openml_feature_covariance_cases/ringnorm_feature_covariance_case.png)
-
-![CIFAR-100 r-growth examples](outputs/cifar100_r_growth_examples.png)
