@@ -8,6 +8,9 @@ Outputs:
 
 - `outputs/selected_cases_summary.csv`
 - `outputs/openml_selected_curves.csv`
+- `outputs/openml_all_cases_summary.csv`
+- `outputs/openml_all_cases_grid.png`
+- `outputs/openml_all_cases/*.png`
 - `outputs/cifar100_selected_curves.csv`
 - `outputs/openml_r_growth_examples.png`
 - `outputs/cifar100_r_growth_examples.png`
@@ -22,5 +25,9 @@ This workspace answers a focused reviewer question using saved real-data results
 | D | CIFAR-100 | bear vs palm_tree | 0.992 | 1 | 0.992 | 0.992 | 0.984 |
 
 ![OpenML r-growth examples](outputs/openml_r_growth_examples.png)
+
+The workspace now also exports all OpenML datasets one by one. Each dataset gets its own curve in `outputs/openml_all_cases/`, and the grid below gives a quick overview of all 13 tasks.
+
+![OpenML all-case grid](outputs/openml_all_cases_grid.png)
 
 ![CIFAR-100 r-growth examples](outputs/cifar100_r_growth_examples.png)

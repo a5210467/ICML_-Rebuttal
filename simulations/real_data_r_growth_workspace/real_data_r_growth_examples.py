@@ -14,6 +14,8 @@ import seaborn as sns
 ROOT = Path(__file__).resolve().parent.parent
 OUT = Path(__file__).resolve().parent / "outputs"
 OUT.mkdir(parents=True, exist_ok=True)
+OPENML_ALL_DIR = OUT / "openml_all_cases"
+OPENML_ALL_DIR.mkdir(parents=True, exist_ok=True)
 
 OPENML_OUT = ROOT / "supcon_openml_workspace" / "outputs_same_r"
 CIFAR_SAME_R_OUT = ROOT / "supcon_cifar100_workspace" / "outputs_same_r"
@@ -59,6 +61,10 @@ def load_openml_case(task: str) -> pd.DataFrame:
     return sub.reset_index(drop=True)
 
 
+def load_openml_all_cases() -> pd.DataFrame:
+    return pd.read_csv(OPENML_OUT / "openml_same_r_compact.csv").copy().sort_values(["dataset", "r"]).reset_index(drop=True)
+
+
 def load_cifar_case(tag: str) -> pd.DataFrame:
     for folder in (CIFAR_SAME_R_OUT, CIFAR_MORE_OUT):
         compact_path = folder / f"{tag}_same_r_compact.csv"
@@ -95,6 +101,16 @@ def summarize_case(df: pd.DataFrame, *, domain: str, label: str, name: str, capt
     }
 
 
+def _slug(text: str) -> str:
+    out = []
+    for ch in str(text).lower():
+        out.append(ch if ch.isalnum() else "_")
+    s = "".join(out).strip("_")
+    while "__" in s:
+        s = s.replace("__", "_")
+    return s
+
+
 def plot_case_grid(cases: list[tuple[dict, pd.DataFrame]], *, domain_title: str, out_name: str) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=False)
     colors = {"KDMLP best": "#43aa8b", "SupCon": "#f94144", "KFDA": "#577590"}
@@ -125,6 +141,80 @@ def plot_case_grid(cases: list[tuple[dict, pd.DataFrame]], *, domain_title: str,
     plt.close(fig)
 
 
+def plot_openml_all_cases(df_all: pd.DataFrame) -> pd.DataFrame:
+    colors = {"KDMLP best": "#43aa8b", "SupCon": "#f94144", "KFDA": "#577590"}
+    summary_rows = []
+    datasets = sorted(df_all["dataset"].unique())
+
+    for dataset in datasets:
+        sub = df_all[df_all["dataset"] == dataset].copy().sort_values("r")
+        start = sub.iloc[0]
+        best = sub.sort_values("my_best_acc", ascending=False).iloc[0]
+        sup_best = sub.sort_values("supcon_acc", ascending=False).iloc[0]
+        gain = float(best["my_best_acc"] - start["my_best_acc"])
+        summary_rows.append(
+            {
+                "dataset": dataset,
+                "r1": int(start["r"]),
+                "kdmlp_r1": float(start["my_best_acc"]),
+                "best_r": int(best["r"]),
+                "kdmlp_best": float(best["my_best_acc"]),
+                "kdmlp_gain": gain,
+                "supcon_best": float(sup_best["supcon_acc"]),
+                "kfda": float(sub["kfda_acc"].iloc[0]),
+            }
+        )
+
+        fig, ax = plt.subplots(figsize=(7.2, 4.6))
+        ax.plot(sub["r"], sub["my_best_acc"], marker="o", linewidth=2.8, color=colors["KDMLP best"], label="KDMLP best")
+        ax.plot(sub["r"], sub["supcon_acc"], marker="o", linewidth=2.4, color=colors["SupCon"], label="SupCon")
+        ax.plot(sub["r"], sub["kfda_acc"], marker="o", linewidth=2.2, linestyle="--", color=colors["KFDA"], label="KFDA")
+        ax.set_title(dataset)
+        ax.set_xlabel("target dimension r")
+        ax.set_ylabel("test accuracy")
+        ax.text(
+            0.02,
+            0.05,
+            f"gain from r={int(start['r'])} to best r={int(best['r'])}: {gain:+.3f}",
+            transform=ax.transAxes,
+            fontsize=10,
+            bbox={"facecolor": "white", "alpha": 0.8, "edgecolor": "#cccccc"},
+        )
+        ax.legend(loc="best", fontsize=10)
+        plt.tight_layout()
+        fig.savefig(OPENML_ALL_DIR / f"{_slug(dataset)}_r_curve.png", dpi=180, bbox_inches="tight")
+        plt.close(fig)
+
+    df_summary = pd.DataFrame(summary_rows).sort_values(["kdmlp_gain", "kdmlp_best"], ascending=[False, False]).reset_index(drop=True)
+    df_summary.to_csv(OUT / "openml_all_cases_summary.csv", index=False)
+
+    n = len(datasets)
+    ncols = 3
+    nrows = int(np.ceil(n / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(18, 4.6 * nrows), sharex=False, sharey=False)
+    axes = np.asarray(axes).reshape(-1)
+    for ax, dataset in zip(axes, datasets):
+        sub = df_all[df_all["dataset"] == dataset].copy().sort_values("r")
+        start = sub.iloc[0]
+        best = sub.sort_values("my_best_acc", ascending=False).iloc[0]
+        gain = float(best["my_best_acc"] - start["my_best_acc"])
+        ax.plot(sub["r"], sub["my_best_acc"], marker="o", linewidth=2.3, color=colors["KDMLP best"], label="KDMLP best")
+        ax.plot(sub["r"], sub["supcon_acc"], marker="o", linewidth=2.0, color=colors["SupCon"], label="SupCon")
+        ax.plot(sub["r"], sub["kfda_acc"], marker="o", linewidth=1.9, linestyle="--", color=colors["KFDA"], label="KFDA")
+        ax.set_title(f"{dataset}\nKDMLP gain {gain:+.3f}", fontsize=12)
+        ax.set_xlabel("r")
+        ax.set_ylabel("acc")
+    for ax in axes[n:]:
+        ax.axis("off")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=3, frameon=True)
+    fig.suptitle("OpenML: all same-r curves (KDMLP vs SupCon vs KFDA)", y=0.995, fontsize=22)
+    plt.tight_layout(rect=(0, 0, 1, 0.97))
+    fig.savefig(OUT / "openml_all_cases_grid.png", dpi=180, bbox_inches="tight")
+    plt.close(fig)
+    return df_summary
+
+
 def build_summary(df_summary: pd.DataFrame) -> str:
     openml_help = df_summary[(df_summary["domain"] == "OpenML") & (df_summary["label"] == "A")].iloc[0]
     openml_flat = df_summary[(df_summary["domain"] == "OpenML") & (df_summary["label"] == "B")].iloc[0]
@@ -141,9 +231,10 @@ def build_summary(df_summary: pd.DataFrame) -> str:
 
 
 def main() -> None:
+    df_openml_all = load_openml_all_cases()
     openml_loaded = []
     for case in OPENML_CASES:
-        df = load_openml_case(case["task"])
+        df = df_openml_all[df_openml_all["dataset"] == case["task"]].copy().sort_values("r").reset_index(drop=True)
         openml_loaded.append((case, df))
 
     cifar_loaded = []
@@ -161,6 +252,7 @@ def main() -> None:
 
     df_summary = pd.DataFrame(rows)
     df_summary.to_csv(OUT / "selected_cases_summary.csv", index=False)
+    df_openml_all_summary = plot_openml_all_cases(df_openml_all)
 
     openml_tidy = []
     for meta, df in openml_loaded:
@@ -182,6 +274,8 @@ def main() -> None:
     plot_case_grid(cifar_loaded, domain_title="CIFAR-100: one case where larger r helps and one where it does not", out_name="cifar100_r_growth_examples.png")
 
     print(df_summary.to_string(index=False))
+    print("\nOpenML all-case ranking by KDMLP gain:")
+    print(df_openml_all_summary.to_string(index=False))
     print("\nInterpretation:")
     print(build_summary(df_summary))
     print(f"\nSaved outputs to {OUT}")

@@ -147,4 +147,8 @@ For OpenML, `sonar` is the clean positive example: KDMLP rises by about `+0.107`
 
 ![OpenML r-growth examples](simulations/real_data_r_growth_workspace/outputs/openml_r_growth_examples.png)
 
+The workspace also exports every OpenML dataset individually. The grid below summarizes all 13 same-`r` OpenML curves, and the folder `simulations/real_data_r_growth_workspace/outputs/openml_all_cases/` contains one plot per dataset.
+
+![OpenML all-case grid](simulations/real_data_r_growth_workspace/outputs/openml_all_cases_grid.png)
+
 ![CIFAR-100 r-growth examples](simulations/real_data_r_growth_workspace/outputs/cifar100_r_growth_examples.png)
