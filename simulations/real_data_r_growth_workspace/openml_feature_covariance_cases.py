@@ -183,23 +183,16 @@ def plot_dataset_case(
 
     ax = axes[0]
     x = np.arange(len(diag_sub))
-    width = 0.35
-    bars1 = ax.bar(x - width / 2, diag_sub["ref_D_sigma_feature"], width=width, color="#277da1", label="reference covariance gap")
-    bars2 = ax.bar(x + width / 2, diag_sub["cov_gap_error_feature"], width=width, color="#f94144", label="train/test covariance error")
+    bars1 = ax.bar(x, diag_sub["ref_D_sigma_feature"], width=0.55, color="#277da1", label="reference covariance gap")
     for i, row in enumerate(diag_sub.itertuples(index=False)):
-        ratio = float(row.ratio)
-        ax.text(i, max(row.ref_D_sigma_feature, row.cov_gap_error_feature) * 1.02, f"{ratio:.2f}", ha="center", va="bottom", fontsize=10)
         if row.kernel == rep_kernel:
             bars1[i].set_edgecolor("black")
-            bars2[i].set_edgecolor("black")
             bars1[i].set_linewidth(2.5)
-            bars2[i].set_linewidth(2.5)
     ax.set_xticks(x)
     ax.set_xticklabels(diag_sub["kernel"])
     ax.set_yscale("log")
     ax.set_ylabel("feature-space magnitude")
-    ax.set_title(f"{label}: {dataset}\nFeature-space covariance gap vs estimation error")
-    ax.legend(loc="upper right", fontsize=10)
+    ax.set_title(f"{label}: {dataset}\nFeature-space reference covariance gap")
 
     ax = axes[1]
     ax.plot(curve_df["r"], curve_df["my_best_acc"], marker="o", linewidth=2.8, color="#43aa8b", label="KDMLP best")
@@ -214,9 +207,7 @@ def plot_dataset_case(
         (
             f"selected KDMLP family: {rep_family.replace('MY-', 'KDMLP ').replace('_mu', '')}\n"
             f"selected kernel: {rep_kernel}\n"
-            f"ref gap = {rep_row['ref_D_sigma_feature']:.4f}\n"
-            f"error = {rep_row['cov_gap_error_feature']:.4f}\n"
-            f"ratio = {rep_row['ratio']:.2f}"
+            f"reference gap = {rep_row['ref_D_sigma_feature']:.4f}"
         ),
         transform=ax.transAxes,
         fontsize=10,
