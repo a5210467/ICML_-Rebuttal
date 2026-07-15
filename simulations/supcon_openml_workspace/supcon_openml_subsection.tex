@@ -42,10 +42,12 @@ $r$ & Best KDMLP & SupCon & KFDA \\
 
 At $r=32$, KDMLP obtains the largest mean accuracy, exceeding SupCon by $0.0162$
 and KFDA by $0.0412$.  At this dimension KDMLP wins/ties/loses against SupCon on
-$6/3/4$ datasets; at $r=64$ the corresponding count is $10/0/3$.  The individual
-curves show that the effect of $r$ is dataset dependent: banana improves steadily,
-sonar peaks at $r=32$, hypothyroid is strongest at $r=1$, and ringnorm remains
-near its ceiling throughout the grid.
+$6/3/4$ datasets and against KFDA on $7/1/5$ datasets.  At $r=64$, the
+corresponding counts are $10/0/3$ and $8/1/4$, respectively.  Figure~\ref{fig:openml-supcon-high-dim}
+shows that these aggregate gains are not uniform across datasets, while
+Figure~\ref{fig:openml-supcon-all} shows the full dependence on $r$: banana
+improves steadily, sonar peaks at $r=32$, hypothyroid is strongest at $r=1$,
+and ringnorm remains near its ceiling throughout the grid.
 
 \begin{figure}[t]
 \centering
@@ -53,6 +55,17 @@ near its ceiling throughout the grid.
 \caption{Mean same-$r$ accuracy across the 13 OpenML tasks.}
 \label{fig:openml-supcon-mean}
 \end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.94\textwidth]{simulations/supcon_openml_workspace/outputs_same_r/openml_dim32_64_barplot.png}
+\caption{Dataset-level test accuracy at the two larger target dimensions.  The
+upper panel reports $r=32$ and the lower panel reports $r=64$; the panels are
+shown separately and are not averaged.  Best KDMLP denotes the better of the
+large- and small-mean KDMLP regimes after Stage-1 kernel selection, whereas the
+binary KFDA reference remains rank one.}
+\label{fig:openml-supcon-high-dim}
+\end{figure*}
 
 \begin{figure*}[t]
 \centering
