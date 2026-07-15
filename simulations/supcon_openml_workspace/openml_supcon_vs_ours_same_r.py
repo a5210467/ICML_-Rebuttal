@@ -256,12 +256,15 @@ def run_openml_same_r():
         .mean()
         .sort_values("r")
     )
-    ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.5, color="#43aa8b", label="MY-best")
+    ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.5, color="#43aa8b", label="Best KDMLP")
     ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.5, color="#f94144", label="SupCon")
-    ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.5, linestyle="--", color="#577590", label="KFDA")
-    ax.set_xlabel("Dimension r")
-    ax.set_ylabel("Mean accuracy across OpenML datasets")
-    ax.set_title("OpenML same-r comparison (KDMLP vs SupCon vs KFDA)")
+    ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.5, linestyle="--", color="#577590", label="KFDA (rank 1)")
+    ax.set_xlabel("Reduced dimension r")
+    ax.set_ylabel("Mean test accuracy")
+    ax.set_title("OpenML mean accuracy across 13 datasets")
+    ax.set_xscale("symlog", linthresh=6)
+    ax.set_xticks(R_VALUES)
+    ax.get_xaxis().set_major_formatter(plt.ScalarFormatter())
     ax.legend()
     plt.tight_layout()
     fig.savefig(OUT / "openml_same_r_mean_curve.png", dpi=180)
@@ -273,12 +276,47 @@ def run_openml_same_r():
         var_name="method",
         value_name="acc",
     )
-    fig, ax = plt.subplots(figsize=(13, 7))
-    sns.barplot(data=plot32, x="dataset", y="acc", hue="method", ax=ax)
-    ax.set_title("OpenML: KDMLP vs SupCon vs KFDA at r=32 or 64")
-    ax.tick_params(axis="x", rotation=45)
+    plot32["method"] = plot32["method"].map(
+        {"my_best_acc": "Best KDMLP", "supcon_acc": "SupCon", "kfda_acc": "KFDA"}
+    )
+    fig, axes = plt.subplots(2, 1, figsize=(15, 12), sharey=True)
+    for ax, r in zip(axes, (32, 64)):
+        sub = plot32[plot32["r"] == r]
+        sns.barplot(data=sub, x="dataset", y="acc", hue="method", errorbar=None, ax=ax)
+        ax.set_title(f"OpenML comparison at r={r}")
+        ax.set_xlabel("")
+        ax.set_ylabel("Accuracy")
+        ax.tick_params(axis="x", rotation=40)
+        if ax is not axes[0] and ax.get_legend() is not None:
+            ax.get_legend().remove()
+    axes[0].legend(title=None, ncol=3, loc="lower right")
     plt.tight_layout()
     fig.savefig(OUT / "openml_dim32_64_barplot.png", dpi=180)
+    plt.close(fig)
+
+    datasets = list(df_compact["dataset"].drop_duplicates())
+    ncols = 3
+    nrows = int(np.ceil(len(datasets) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(16, 4.2 * nrows), sharex=True)
+    axes = np.asarray(axes).reshape(-1)
+    for ax, dataset in zip(axes, datasets):
+        sub = df_compact[df_compact["dataset"] == dataset].sort_values("r")
+        ax.plot(sub["r"], sub["my_best_acc"], marker="o", linewidth=2.0, color="#43aa8b", label="Best KDMLP")
+        ax.plot(sub["r"], sub["supcon_acc"], marker="o", linewidth=2.0, color="#f94144", label="SupCon")
+        ax.plot(sub["r"], sub["kfda_acc"], marker="o", linewidth=2.0, linestyle="--", color="#577590", label="KFDA (rank 1)")
+        ax.set_title(dataset)
+        ax.set_xlabel("Dimension r")
+        ax.set_ylabel("Test accuracy")
+        ax.set_xscale("symlog", linthresh=6)
+        ax.set_xticks(R_VALUES)
+        ax.get_xaxis().set_major_formatter(plt.ScalarFormatter())
+    for ax in axes[len(datasets):]:
+        ax.axis("off")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.975), ncol=3, frameon=True)
+    fig.suptitle("OpenML same-r curves by dataset", y=0.995)
+    plt.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.savefig(OUT / "openml_all_same_r_curves.png", dpi=180)
     plt.close(fig)
 
     print(df_dim32_64.to_string(index=False))

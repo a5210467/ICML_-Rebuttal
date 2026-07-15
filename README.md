@@ -94,6 +94,8 @@ Workspace: `simulations/supcon_gaussian_workspace`
 
 This comparison uses the dimension-matched protocol: after SupCon training, its representation is compressed to the same final dimension `r` as KDMLP. In this high-dimensional synthetic setting, `KDMLP large` stays near-perfect at very small `r`, while SupCon benefits only modestly from increasing `r`.
 
+The population dimension is `d=220`; the mean gap is `0.2`, while the input-space covariance gap is `45.538` in Frobenius norm. The table reports the mean over two independent repetitions.
+
 | Label | Final dimension `r` | `KDMLP large` | SupCon |
 | --- | ---: | ---: | ---: |
 | A | 1 | 0.9992 | 0.9471 |
@@ -102,11 +104,17 @@ This comparison uses the dimension-matched protocol: after SupCon training, its 
 
 ![Gaussian KDMLP vs SupCon](simulations/supcon_gaussian_workspace/outputs_dimmatch/same_r_accuracy_plot.png)
 
+The companion diagnostic compares the training and independent-reference estimates of the covariance gap after reduction. Its absolute scale is representation-dependent, so it is interpreted across `r` within each method rather than as a direct cross-method ranking.
+
+![Gaussian covariance-gap estimation error](simulations/supcon_gaussian_workspace/outputs_dimmatch/same_r_covgap_error_plot.png)
+
 ## 4. OpenML KDMLP vs SupCon (+ KFDA)
 
 Workspace: `simulations/supcon_openml_workspace`
 
 This workspace extends the same-`r` comparison to OpenML binary classification tasks. The strongest wins appear on datasets where a small number of KDMLP directions remains highly informative, while some datasets remain more sensitive to the chosen `r`. The updated same-`r` plots now include the binary KFDA reference across the tested `r` grid as well, repeated as a flat curve because binary KFDA contributes only one non-zero discriminant direction.
+
+Across the 13 tasks, the mean accuracies at `r=32` are `0.8780`, `0.8617`, and `0.8368` for best KDMLP, SupCon, and KFDA, respectively. These are exploratory one-split results; model selection at each `r` uses the observed test accuracy, so a nested repeated evaluation is still needed for confirmatory claims.
 
 | Label | Dataset | `r` | Best KDMLP | SupCon | KFDA |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -116,6 +124,8 @@ This workspace extends the same-`r` comparison to OpenML binary classification t
 | D | sonar | 32 | 0.905 | 0.857 | 0.655 |
 
 ![OpenML KDMLP vs SupCon vs KFDA](simulations/supcon_openml_workspace/outputs_same_r/openml_same_r_mean_curve.png)
+
+![OpenML same-r curves for all datasets](simulations/supcon_openml_workspace/outputs_same_r/openml_all_same_r_curves.png)
 
 ## 5. CIFAR-100 KDMLP vs SupCon (+ KFDA)
 

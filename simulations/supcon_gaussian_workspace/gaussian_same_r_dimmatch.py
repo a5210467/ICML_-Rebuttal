@@ -14,11 +14,20 @@ from sklearn.decomposition import PCA
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs_dimmatch"
 OUT.mkdir(parents=True, exist_ok=True)
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
-sys.path.insert(0, str(ROOT / "redo_projection_workspace"))
+for workspace_name in ("supcon_comparison_workspace", "redo_projection_workspace"):
+    for candidate in (
+        ROOT / workspace_name,
+        REPO_ROOT / workspace_name,
+        PROJECT_ROOT / workspace_name,
+    ):
+        if candidate.exists():
+            sys.path.insert(0, str(candidate))
+            break
 
 from compare_supcon_vs_ours import (  # type: ignore
     NOTEBOOK_PATH,
@@ -299,9 +308,17 @@ def run_case():
     for method, color in [("MY-large_mu", "#43aa8b"), ("MY-small_mu", "#f8961e"), ("SupCon", "#f94144")]:
         sub = acc_summary[acc_summary["method"] == method].sort_values("r")
         ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, label=DISPLAY_METHOD[method], color=color)
+        ax.fill_between(
+            sub["r"],
+            sub["acc_mean"] - sub["acc_std"].fillna(0),
+            sub["acc_mean"] + sub["acc_std"].fillna(0),
+            color=color,
+            alpha=0.13,
+        )
     ax.set_xlabel("Reduced dimension r")
-    ax.set_ylabel("Accuracy")
-    ax.set_title("Same-r comparison: MY vs SupCon")
+    ax.set_ylabel("Test accuracy")
+    ax.set_title("Gaussian same-r comparison")
+    ax.set_xticks(range(1, 7))
     ax.legend()
     plt.tight_layout()
     fig.savefig(OUT / "same_r_accuracy_plot.png", dpi=180)
@@ -312,8 +329,9 @@ def run_case():
         sub = cov_summary[cov_summary["method"] == method].sort_values("r")
         ax.plot(sub["r"], sub["cov_gap_error"], marker="o", linewidth=2.5, label=DISPLAY_METHOD[method], color=color)
     ax.set_xlabel("Reduced dimension r")
-    ax.set_ylabel("Covariance-gap error")
-    ax.set_title("Approximate vs reference covariance-gap error")
+    ax.set_ylabel("Covariance-gap estimation error")
+    ax.set_title("Training versus reference covariance-gap estimates")
+    ax.set_xticks(range(1, 7))
     ax.legend()
     plt.tight_layout()
     fig.savefig(OUT / "same_r_covgap_error_plot.png", dpi=180)
@@ -323,9 +341,9 @@ def run_case():
     ax.plot(df_match["my_r"], df_match["closest_supcon_r"], marker="o", linewidth=2.5, color="#577590")
     for _, row in df_match.iterrows():
         ax.text(row["my_r"], row["closest_supcon_r"] + 0.08, f"gap={row['abs_acc_gap']:.3f}", ha="center", fontsize=10)
-    ax.set_xlabel("My method dimension r")
+    ax.set_xlabel("KDMLP dimension r")
     ax.set_ylabel("Closest SupCon dimension")
-    ax.set_title("SupCon dimension that best matches MY-best accuracy")
+    ax.set_title("Dimension needed for the closest SupCon accuracy")
     ax.set_xticks(df_match["my_r"])
     ax.set_yticks(range(1, 7))
     plt.tight_layout()
