@@ -12,11 +12,20 @@ import seaborn as sns
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs_hd220"
 OUT.mkdir(parents=True, exist_ok=True)
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
-sys.path.insert(0, str(ROOT / "redo_projection_workspace"))
+for workspace_name in ("supcon_comparison_workspace", "redo_projection_workspace"):
+    for candidate in (
+        ROOT / workspace_name,
+        REPO_ROOT / workspace_name,
+        PROJECT_ROOT / workspace_name,
+    ):
+        if candidate.exists():
+            sys.path.insert(0, str(candidate))
+            break
 
 from compare_supcon_vs_ours import load_notebook_namespace, train_supcon_feature_model, NOTEBOOK_PATH  # type: ignore
 import redo_projection_cv_experiment as base  # type: ignore
@@ -29,6 +38,12 @@ DISPLAY_METHOD = {
     "MY-large_mu": "KDMLP large",
     "MY-small_mu": "KDMLP small",
     "SupCon-feature": "SupCon",
+}
+
+CASE_TITLE = {
+    "hd220_case_1": "A: covariance scale 2.5",
+    "hd220_case_2": "B: covariance scale 2.8",
+    "hd220_case_3": "C: covariance scale 3.0",
 }
 
 
@@ -189,10 +204,10 @@ def run_hd220_experiment():
         sub = df[df["case"] == case_name].copy()
         sub["method_display"] = sub["method"].map(DISPLAY_METHOD)
         ax.bar(sub["method_display"], sub["acc_mean"], yerr=sub["acc_std"], color=["#577590", "#43aa8b", "#f8961e", "#f94144"])
-        ax.set_title(case_name)
+        ax.set_title(CASE_TITLE.get(case_name, case_name))
         ax.set_ylim(0.8, 1.02)
         ax.tick_params(axis="x", rotation=18)
-    axes[0].set_ylabel("Accuracy")
+    axes[0].set_ylabel("Test accuracy")
     plt.tight_layout()
     fig.savefig(OUT / "hd220_accuracy_bar.png", dpi=180)
     plt.close(fig)

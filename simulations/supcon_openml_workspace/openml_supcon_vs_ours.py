@@ -14,10 +14,19 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs"
 OUT.mkdir(parents=True, exist_ok=True)
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
+for candidate in (
+    ROOT / "supcon_comparison_workspace",
+    REPO_ROOT / "supcon_comparison_workspace",
+    PROJECT_ROOT / "supcon_comparison_workspace",
+):
+    if candidate.exists():
+        sys.path.insert(0, str(candidate))
+        break
 
 from compare_supcon_vs_ours import load_notebook_namespace, train_supcon_feature_model, NOTEBOOK_PATH  # type: ignore
 
@@ -32,7 +41,16 @@ DISPLAY_METHOD = {
 }
 
 
-OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
+for candidate in (
+    ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb",
+    REPO_ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb",
+    PROJECT_ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb",
+):
+    if candidate.exists():
+        OPENML_NOTEBOOK = candidate
+        break
+else:
+    OPENML_NOTEBOOK = ROOT / "OPENML_KFDA_vs_Our_method_multidim.ipynb"
 
 
 def open_png_outputs(out_dir: Path) -> None:
@@ -190,8 +208,8 @@ def run_openml_experiment():
     colors = ["#43aa8b" if v > 0 else "#f94144" for v in sub["margin_my_minus_supcon"]]
     ax.barh(sub["dataset"], sub["margin_my_minus_supcon"], color=colors)
     ax.axvline(0.0, color="black", linewidth=1.2)
-    ax.set_xlabel("MY-best minus SupCon accuracy")
-    ax.set_title("OpenML: our method vs SupCon")
+    ax.set_xlabel("Best KDMLP minus SupCon accuracy")
+    ax.set_title("OpenML: KDMLP vs SupCon")
     plt.tight_layout()
     fig.savefig(OUT / "openml_margin_vs_supcon.png", dpi=180)
     plt.close(fig)
@@ -208,6 +226,7 @@ def run_openml_experiment():
     df_plot = pd.DataFrame(plot_rows)
     fig, ax = plt.subplots(figsize=(13, 7))
     sns.barplot(data=df_plot, x="dataset", y="acc", hue="method", ax=ax)
+    ax.set_ylabel("Test accuracy")
     ax.set_title("OpenML summary comparison")
     ax.tick_params(axis="x", rotation=45)
     plt.tight_layout()

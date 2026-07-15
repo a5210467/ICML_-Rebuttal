@@ -12,11 +12,20 @@ import seaborn as sns
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs"
 OUT.mkdir(parents=True, exist_ok=True)
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
-sys.path.insert(0, str(ROOT / "redo_projection_workspace"))
+for workspace_name in ("supcon_comparison_workspace", "redo_projection_workspace"):
+    for candidate in (
+        ROOT / workspace_name,
+        REPO_ROOT / workspace_name,
+        PROJECT_ROOT / workspace_name,
+    ):
+        if candidate.exists():
+            sys.path.insert(0, str(candidate))
+            break
 
 from compare_supcon_vs_ours import load_notebook_namespace, train_supcon_feature_model, NOTEBOOK_PATH  # type: ignore
 import redo_projection_cv_experiment as base  # type: ignore
@@ -29,6 +38,12 @@ DISPLAY_METHOD = {
     "MY-large_mu": "KDMLP large",
     "MY-small_mu": "KDMLP small",
     "SupCon-feature": "SupCon",
+}
+
+REGIME_TITLE = {
+    "same_mean_diff_covariance": "A: Same mean, large covariance difference",
+    "diff_mean_diff_covariance": "B: Different mean, large covariance difference",
+    "diff_mean_tiny_covariance_gap": "C: Different mean, small covariance gap",
 }
 
 
@@ -158,7 +173,7 @@ def run_gaussian_experiment():
             [
                 {
                     "regime": regime.name,
-                    "title": regime.title,
+                    "title": REGIME_TITLE.get(regime.name, regime.title),
                     "method": "KFDA-1D",
                     "acc_mean": best_kfda["acc_mean"],
                     "acc_std": best_kfda["acc_std"],
@@ -167,7 +182,7 @@ def run_gaussian_experiment():
                 },
                 {
                     "regime": regime.name,
-                    "title": regime.title,
+                    "title": REGIME_TITLE.get(regime.name, regime.title),
                     "method": "MY-large_mu",
                     "acc_mean": best_large["acc_mean"],
                     "acc_std": best_large["acc_std"],
@@ -176,7 +191,7 @@ def run_gaussian_experiment():
                 },
                 {
                     "regime": regime.name,
-                    "title": regime.title,
+                    "title": REGIME_TITLE.get(regime.name, regime.title),
                     "method": "MY-small_mu",
                     "acc_mean": best_small["acc_mean"],
                     "acc_std": best_small["acc_std"],
@@ -185,7 +200,7 @@ def run_gaussian_experiment():
                 },
                 {
                     "regime": regime.name,
-                    "title": regime.title,
+                    "title": REGIME_TITLE.get(regime.name, regime.title),
                     "method": "SupCon-feature",
                     "acc_mean": sup_acc,
                     "acc_std": sup_std,
@@ -207,10 +222,10 @@ def run_gaussian_experiment():
         sub = df_summary[df_summary["regime"] == regime.name].copy()
         sub["method_display"] = sub["method"].map(DISPLAY_METHOD)
         ax.bar(sub["method_display"], sub["acc_mean"], yerr=sub["acc_std"], color=["#577590", "#43aa8b", "#f8961e", "#f94144"])
-        ax.set_title(regime.title)
+        ax.set_title(REGIME_TITLE.get(regime.name, regime.title))
         ax.set_ylim(0.45, 1.0)
         ax.tick_params(axis="x", rotation=18)
-    axes[0].set_ylabel("Accuracy")
+    axes[0].set_ylabel("Test accuracy")
     plt.tight_layout()
     fig.savefig(OUT / "gaussian_accuracy_comparison.png", dpi=180)
     plt.close(fig)
@@ -229,7 +244,7 @@ def run_gaussian_experiment():
         ax.bar(x + 0.18, sub["cov_gap_error_feature"], width=0.36, label="feature error", color="#9ca3af")
         ax.set_xticks(x)
         ax.set_xticklabels(sub["kernel"], rotation=20)
-        ax.set_title(regime.title)
+        ax.set_title(REGIME_TITLE.get(regime.name, regime.title))
     axes[0].set_ylabel("Magnitude")
     axes[-1].legend()
     plt.tight_layout()

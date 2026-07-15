@@ -1,13 +1,13 @@
 regime,title,method,acc_mean,acc_std,stage1_kernel,r
-same_mean_diff_covariance,"Case A: Same Mean, Different Dense Covariances",KFDA-1D,0.6036111111111111,0.05163025150403947,rbf,1
-same_mean_diff_covariance,"Case A: Same Mean, Different Dense Covariances",MY-large_mu,0.7869444444444444,0.00750385703291118,linear,6
-same_mean_diff_covariance,"Case A: Same Mean, Different Dense Covariances",MY-small_mu,0.7830555555555555,0.02723462019263416,linear,6
-same_mean_diff_covariance,"Case A: Same Mean, Different Dense Covariances",SupCon-feature,0.8388888888888889,0.008061539922739704,n/a,-1
-diff_mean_diff_covariance,"Case B: Different Mean, Different Dense Covariances",KFDA-1D,0.6623611111111111,0.03279336964376481,rbf,1
-diff_mean_diff_covariance,"Case B: Different Mean, Different Dense Covariances",MY-large_mu,0.8547222222222222,0.01332247822013329,linear,6
-diff_mean_diff_covariance,"Case B: Different Mean, Different Dense Covariances",MY-small_mu,0.836388888888889,0.0037345360165969123,linear,6
-diff_mean_diff_covariance,"Case B: Different Mean, Different Dense Covariances",SupCon-feature,0.8904166666666665,0.01831912328081722,n/a,-1
-diff_mean_tiny_covariance_gap,"Case C: Different Mean, Tiny Dense Covariance Gap",KFDA-1D,0.6397222222222222,0.02604861018543199,polynomial,1
-diff_mean_tiny_covariance_gap,"Case C: Different Mean, Tiny Dense Covariance Gap",MY-large_mu,0.6206944444444444,0.0165481900095628,rbf,4
-diff_mean_tiny_covariance_gap,"Case C: Different Mean, Tiny Dense Covariance Gap",MY-small_mu,0.5416666666666666,0.0018162078931419129,laplacian,6
-diff_mean_tiny_covariance_gap,"Case C: Different Mean, Tiny Dense Covariance Gap",SupCon-feature,0.5984722222222222,0.02380597691835052,n/a,-1
+same_mean_diff_covariance,"A: Same mean, large covariance difference",KFDA-1D,0.6036111111111111,0.0516302515040394,rbf,1
+same_mean_diff_covariance,"A: Same mean, large covariance difference",MY-large_mu,0.7869444444444444,0.0075038570329111,linear,6
+same_mean_diff_covariance,"A: Same mean, large covariance difference",MY-small_mu,0.7830555555555555,0.0272346201926341,linear,6
+same_mean_diff_covariance,"A: Same mean, large covariance difference",SupCon-feature,0.8388888888888889,0.0080615399227397,,-1
+diff_mean_diff_covariance,"B: Different mean, large covariance difference",KFDA-1D,0.6623611111111111,0.0327933696437648,rbf,1
+diff_mean_diff_covariance,"B: Different mean, large covariance difference",MY-large_mu,0.8547222222222222,0.0133224782201332,linear,6
+diff_mean_diff_covariance,"B: Different mean, large covariance difference",MY-small_mu,0.836388888888889,0.0037345360165969,linear,6
+diff_mean_diff_covariance,"B: Different mean, large covariance difference",SupCon-feature,0.8904166666666665,0.0183191232808172,,-1
+diff_mean_tiny_covariance_gap,"C: Different mean, small covariance gap",KFDA-1D,0.6397222222222222,0.0260486101854319,polynomial,1
+diff_mean_tiny_covariance_gap,"C: Different mean, small covariance gap",MY-large_mu,0.6206944444444444,0.0165481900095628,rbf,4
+diff_mean_tiny_covariance_gap,"C: Different mean, small covariance gap",MY-small_mu,0.5416666666666666,0.0018162078931419,laplacian,6
+diff_mean_tiny_covariance_gap,"C: Different mean, small covariance gap",SupCon-feature,0.5984722222222222,0.0238059769183505,,-1
