@@ -16,13 +16,31 @@ from torchvision import datasets
 
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = ROOT.parent
+PROJECT_ROOT = REPO_ROOT.parent
 OUT = Path(__file__).resolve().parent / "outputs"
 OUT.mkdir(parents=True, exist_ok=True)
 PAIR_CACHE = OUT / "pair_cache"
 PAIR_CACHE.mkdir(parents=True, exist_ok=True)
-VISION_ROOT = ROOT / "modern_benchmark_data" / "vision"
+for candidate in (
+    ROOT / "modern_benchmark_data" / "vision",
+    REPO_ROOT / "modern_benchmark_data" / "vision",
+    PROJECT_ROOT / "modern_benchmark_data" / "vision",
+):
+    if candidate.exists():
+        VISION_ROOT = candidate
+        break
+else:
+    VISION_ROOT = ROOT / "modern_benchmark_data" / "vision"
 
-sys.path.insert(0, str(ROOT / "supcon_comparison_workspace"))
+for candidate in (
+    ROOT / "supcon_comparison_workspace",
+    REPO_ROOT / "supcon_comparison_workspace",
+    PROJECT_ROOT / "supcon_comparison_workspace",
+):
+    if candidate.exists():
+        sys.path.insert(0, str(candidate))
+        break
 
 from compare_supcon_vs_ours import (  # type: ignore
     NOTEBOOK_PATH,
@@ -193,8 +211,8 @@ def make_final_plots(ns: dict, exp: dict, *, tag: str):
     best = exp["ours_best"]
     bar_rows = [
         {"method": "KFDA-1D", "acc_mean": best["KFDA"]["acc_mean"], "acc_std": best["KFDA"]["acc_std"]},
-        {"method": "MY-large_mu", "acc_mean": best["MY-large_mu"]["acc_mean"], "acc_std": best["MY-large_mu"]["acc_std"]},
-        {"method": "MY-small_mu", "acc_mean": best["MY-small_mu"]["acc_mean"], "acc_std": best["MY-small_mu"]["acc_std"]},
+        {"method": "KDMLP large", "acc_mean": best["MY-large_mu"]["acc_mean"], "acc_std": best["MY-large_mu"]["acc_std"]},
+        {"method": "KDMLP small", "acc_mean": best["MY-small_mu"]["acc_mean"], "acc_std": best["MY-small_mu"]["acc_std"]},
         {"method": "SupCon", "acc_mean": exp["supcon_mean"], "acc_std": exp["supcon_std"]},
     ]
     df_bar = pd.DataFrame(bar_rows)
@@ -213,9 +231,10 @@ def make_final_plots(ns: dict, exp: dict, *, tag: str):
         .groupby(["family", "r"], as_index=False)[["acc_mean"]].mean()
     )
     fig, ax = plt.subplots(figsize=(9, 5))
+    display_labels = {"MY-large_mu": "KDMLP large", "MY-small_mu": "KDMLP small"}
     for fam, color in [("MY-large_mu", "#43aa8b"), ("MY-small_mu", "#f8961e")]:
         sub = df_curve[df_curve["family"] == fam].sort_values("r")
-        ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, label=fam, color=color)
+        ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, label=display_labels[fam], color=color)
     ax.axhline(best["KFDA"]["acc_mean"], linestyle="--", color="#577590", label="KFDA-1D")
     ax.axhline(exp["supcon_mean"], linestyle=":", color="#f94144", label="SupCon")
     ax.set_xlabel("Projection dimension r")
@@ -309,7 +328,7 @@ def main():
     labels = [f"{a} vs {b}" for a, b in zip(sub["class0"], sub["class1"])]
     ax.barh(labels, sub["margin"], color=colors)
     ax.axvline(0.0, color="black", linewidth=1.2)
-    ax.set_xlabel("MY-best minus SupCon accuracy")
+    ax.set_xlabel("Best KDMLP minus SupCon accuracy")
     ax.set_title("CIFAR-100 full-check margins")
     plt.tight_layout()
     fig.savefig(OUT / "cifar100_margin_plot.png", dpi=180)

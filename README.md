@@ -121,14 +121,28 @@ This workspace extends the same-`r` comparison to OpenML binary classification t
 
 Workspace: `simulations/supcon_cifar100_workspace`
 
-These experiments compare a selected set of binary CIFAR-100 tasks, using the same final dimension `r` for all three methods in the summary plots. The most useful pairs show that `KDMLP large` can outperform SupCon while still using a small or moderate target dimension, and the KFDA reference is now shown on the same `r` axis as a flat binary baseline.
+These feature-level experiments hold the initial image representation fixed: every CIFAR-100 image is mapped to the same 512-dimensional feature vector by a frozen ImageNet-pretrained ResNet-18. KDMLP operates directly on those vectors, whereas SupCon trains an additional contrastive encoder on the same training features. SupCon is then reduced by training-set PCA so that both methods are evaluated at the same final dimension `r`. Each selected binary task contains 80 images per class and is evaluated over two stratified 60/40 splits; KFDA is included as a flat 1D binary reference.
 
-| Label | Task | Best `r` | Best KDMLP | SupCon | KFDA |
+The four tasks below were retained from an exploratory pair scan. The reported `r` maximizes the observed KDMLP-minus-SupCon margin over `r in {1,2,3,4,5,6,32,64}`, so these are representative cases rather than an unbiased CIFAR-100 benchmark.
+
+| Label | Task | Reported `r` | Best KDMLP | SupCon | KFDA |
 | --- | --- | ---: | ---: | ---: | ---: |
-| A | beaver vs possum | 2 | 0.906 | 0.844 | 0.836 |
-| B | clock vs tractor | 1 | 1.000 | 1.000 | 1.000 |
+| A | lion vs possum | 4 | 0.992 | 0.930 | 0.984 |
+| B | bee vs spider | 64 | 0.898 | 0.859 | 0.852 |
+| C | bear vs palm tree | 64 | 0.984 | 0.969 | 0.984 |
+| D | palm tree vs train | 5 | 0.953 | 0.938 | 0.930 |
 
-![CIFAR-100 KDMLP vs SupCon vs KFDA](simulations/supcon_cifar100_workspace/outputs_same_r/cifar100_same_r_mean_curve.png)
+The overview shows all four same-`r` KDMLP and SupCon curves. The pair-level figures below retain both KDMLP regimes and the KFDA reference, making it possible to inspect the full dimension dependence rather than only the selected summary point.
+
+![Selected CIFAR-100 same-r overview](simulations/supcon_cifar100_workspace/outputs_more_examples/cifar100_more_examples_same_r.png)
+
+![CIFAR-100 lion vs possum details](simulations/supcon_cifar100_workspace/outputs_more_examples/lion_vs_possum_same_r_curve.png)
+
+![CIFAR-100 bee vs spider details](simulations/supcon_cifar100_workspace/outputs_more_examples/bee_vs_spider_same_r_curve.png)
+
+![CIFAR-100 bear vs palm tree details](simulations/supcon_cifar100_workspace/outputs_more_examples/bear_vs_palm_tree_same_r_curve.png)
+
+![CIFAR-100 palm tree vs train details](simulations/supcon_cifar100_workspace/outputs_more_examples/palm_tree_vs_train_same_r_curve.png)
 
 ## 6. Real-Data Gains As `r` Increases
 

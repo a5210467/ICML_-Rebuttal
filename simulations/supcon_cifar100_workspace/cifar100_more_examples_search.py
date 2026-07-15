@@ -68,7 +68,7 @@ def make_scan_plot(df_scan: pd.DataFrame):
     colors = ["#43aa8b" if m > 0 else "#f94144" for m in sub["margin"]]
     ax.barh(labels, sub["margin"], color=colors)
     ax.axvline(0.0, color="black", linewidth=1.2)
-    ax.set_xlabel("MY-best minus SupCon accuracy")
+    ax.set_xlabel("Best KDMLP minus SupCon accuracy")
     ax.set_title("Broader CIFAR-100 quick scan")
     plt.tight_layout()
     fig.savefig(OUT / "cifar100_more_scan_margins.png", dpi=180)
@@ -79,7 +79,7 @@ def make_shortlist_plot(df_compact: pd.DataFrame):
     fig, ax = plt.subplots(figsize=(10, 6))
     for task, sub in df_compact.groupby("task"):
         short_label = task.replace("CIFAR100: ", "")
-        ax.plot(sub["r"], sub["my_best_acc"], marker="o", linewidth=2.2, label=f"{short_label} | MY")
+        ax.plot(sub["r"], sub["my_best_acc"], marker="o", linewidth=2.2, label=f"{short_label} | KDMLP")
         ax.plot(sub["r"], sub["supcon_acc"], marker="o", linewidth=1.6, linestyle="--", alpha=0.85, label=f"{short_label} | SupCon")
     ax.set_xlabel("Reduced dimension r")
     ax.set_ylabel("Accuracy")
@@ -87,6 +87,25 @@ def make_shortlist_plot(df_compact: pd.DataFrame):
     ax.legend(fontsize=10, ncol=2)
     plt.tight_layout()
     fig.savefig(OUT / "cifar100_more_examples_same_r.png", dpi=180)
+    plt.close(fig)
+
+
+def make_mean_curve(df_compact: pd.DataFrame):
+    fig, ax = plt.subplots(figsize=(9, 5))
+    columns = ["my_best_acc", "supcon_acc"]
+    if "kfda_acc" in df_compact.columns:
+        columns.append("kfda_acc")
+    mean_curve = df_compact.groupby("r", as_index=False)[columns].mean()
+    ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.4, label="Best KDMLP mean", color="#43aa8b")
+    ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.4, label="SupCon mean", color="#f94144")
+    if "kfda_acc" in mean_curve.columns:
+        ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.4, linestyle="--", label="KFDA mean", color="#577590")
+    ax.set_xlabel("Reduced dimension r")
+    ax.set_ylabel("Mean accuracy across shortlist")
+    ax.set_title("CIFAR-100 shortlist: mean same-r curve")
+    ax.legend()
+    plt.tight_layout()
+    fig.savefig(OUT / "cifar100_same_r_mean_curve.png", dpi=180)
     plt.close(fig)
 
 
@@ -186,17 +205,7 @@ def main():
 
     make_shortlist_plot(df_all_compact)
 
-    fig, ax = plt.subplots(figsize=(9, 5))
-    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc"]].mean()
-    ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.4, label="MY-best mean", color="#43aa8b")
-    ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.4, label="SupCon mean", color="#f94144")
-    ax.set_xlabel("Reduced dimension r")
-    ax.set_ylabel("Mean accuracy across shortlist")
-    ax.set_title("CIFAR-100 shortlist: mean same-r curve")
-    ax.legend()
-    plt.tight_layout()
-    fig.savefig(OUT / "cifar100_same_r_mean_curve.png", dpi=180)
-    plt.close(fig)
+    make_mean_curve(df_all_compact)
 
     print("\nQuick-scan top rows:")
     print(df_scan.head(10).to_string(index=False))

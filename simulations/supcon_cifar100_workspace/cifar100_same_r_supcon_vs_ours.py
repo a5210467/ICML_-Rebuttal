@@ -53,6 +53,13 @@ from compare_supcon_vs_ours import (  # type: ignore
 
 sns.set_theme(style="whitegrid", context="talk")
 
+METHOD_LABELS = {
+    "KFDA": "KFDA",
+    "MY-large_mu": "KDMLP large",
+    "MY-small_mu": "KDMLP small",
+    "SupCon": "SupCon",
+}
+
 PAIR_SETTINGS = [
     ("beaver", "possum"),
     ("clock", "tractor"),
@@ -337,7 +344,15 @@ def plot_pair(exp: dict, acc_summary: pd.DataFrame, compact: pd.DataFrame):
     for method, color, linestyle in [("KFDA", "#577590", "--"), ("MY-large_mu", "#43aa8b", "-"), ("MY-small_mu", "#f8961e", "-"), ("SupCon", "#f94144", "-")]:
         sub = acc_summary[acc_summary["method"] == method].sort_values("r")
         if len(sub):
-            ax.plot(sub["r"], sub["acc_mean"], marker="o", linewidth=2.5, linestyle=linestyle, label=method, color=color)
+            ax.plot(
+                sub["r"],
+                sub["acc_mean"],
+                marker="o",
+                linewidth=2.5,
+                linestyle=linestyle,
+                label=METHOD_LABELS[method],
+                color=color,
+            )
     ax.set_xlabel("Reduced dimension r")
     ax.set_ylabel("Accuracy")
     ax.set_title(meta["task_name"])
@@ -351,7 +366,7 @@ def plot_pair(exp: dict, acc_summary: pd.DataFrame, compact: pd.DataFrame):
         fig, ax = plt.subplots(figsize=(8, 5))
         x = np.arange(len(sub))
         width = 0.26
-        ax.bar(x - width, sub["my_best_acc"], width=width, color="#43aa8b", label="MY-best")
+        ax.bar(x - width, sub["my_best_acc"], width=width, color="#43aa8b", label="Best KDMLP")
         ax.bar(x, sub["supcon_acc"], width=width, color="#f94144", label="SupCon")
         ax.bar(x + width, sub["kfda_acc"], width=width, color="#577590", label="KFDA")
         ax.set_xticks(x, [f"r={int(r)}" for r in sub["r"]])
@@ -362,6 +377,21 @@ def plot_pair(exp: dict, acc_summary: pd.DataFrame, compact: pd.DataFrame):
         plt.tight_layout()
         fig.savefig(OUT / f"{tag}_dim32_64_bar.png", dpi=180)
         plt.close(fig)
+
+
+def plot_mean_curve(df_all_compact: pd.DataFrame) -> None:
+    fig, ax = plt.subplots(figsize=(10, 6))
+    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc", "kfda_acc"]].mean()
+    ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.5, label="Best KDMLP mean", color="#43aa8b")
+    ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.5, label="SupCon mean", color="#f94144")
+    ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.5, linestyle="--", label="KFDA mean", color="#577590")
+    ax.set_xlabel("Reduced dimension r")
+    ax.set_ylabel("Mean accuracy across selected CIFAR-100 pairs")
+    ax.set_title("Same-r CIFAR-100 comparison (KDMLP vs SupCon vs KFDA)")
+    ax.legend()
+    plt.tight_layout()
+    fig.savefig(OUT / "cifar100_same_r_mean_curve.png", dpi=180)
+    plt.close(fig)
 
 
 def main():
@@ -392,18 +422,7 @@ def main():
     df_all_acc.to_csv(OUT / "cifar100_same_r_summary_all.csv", index=False)
     df_all_compact.to_csv(OUT / "cifar100_same_r_compact_all.csv", index=False)
 
-    fig, ax = plt.subplots(figsize=(10, 6))
-    mean_curve = df_all_compact.groupby("r", as_index=False)[["my_best_acc", "supcon_acc", "kfda_acc"]].mean()
-    ax.plot(mean_curve["r"], mean_curve["my_best_acc"], marker="o", linewidth=2.5, label="MY-best mean", color="#43aa8b")
-    ax.plot(mean_curve["r"], mean_curve["supcon_acc"], marker="o", linewidth=2.5, label="SupCon mean", color="#f94144")
-    ax.plot(mean_curve["r"], mean_curve["kfda_acc"], marker="o", linewidth=2.5, linestyle="--", label="KFDA mean", color="#577590")
-    ax.set_xlabel("Reduced dimension r")
-    ax.set_ylabel("Mean accuracy across selected CIFAR-100 pairs")
-    ax.set_title("Same-r CIFAR-100 comparison (KDMLP vs SupCon vs KFDA)")
-    ax.legend()
-    plt.tight_layout()
-    fig.savefig(OUT / "cifar100_same_r_mean_curve.png", dpi=180)
-    plt.close(fig)
+    plot_mean_curve(df_all_compact)
 
     print("\nInterpretation:")
     print(build_same_r_cifar_summary(df_all_compact))
