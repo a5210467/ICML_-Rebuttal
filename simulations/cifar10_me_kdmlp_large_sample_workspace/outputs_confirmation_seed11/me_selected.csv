@@ -1,0 +1,7 @@
+pair,class0,class1,rep,m,r,stage1_kernel,family,class0_bags,class1_bags,stable_r_limit,coordinate_rank,available_directions,D_mu,D_covariance,heuristic_family,evaluation_protocol,status,status_detail,acc,probe_C
+automobile vs truck,automobile,truck,0,8,24,rbf,large_mu,37,37,37,73,24,21377.05527048349,48234.651045650106,large_mu,disjoint_bag_coordinate_me_single_point_probe_v1,ok,,0.945,0.1
+automobile vs truck,automobile,truck,0,8,24,rbf,small_mu,37,37,36,73,24,21377.05527048349,48234.651045650106,large_mu,disjoint_bag_coordinate_me_single_point_probe_v1,ok,,0.9375,1.0
+automobile vs truck,automobile,truck,1,8,24,laplacian,large_mu,37,37,37,73,24,16747.43968666578,37827.7160613625,large_mu,disjoint_bag_coordinate_me_single_point_probe_v1,ok,,0.94,0.1
+automobile vs truck,automobile,truck,1,8,24,laplacian,small_mu,37,37,36,73,24,16747.43968666578,37827.7160613625,large_mu,disjoint_bag_coordinate_me_single_point_probe_v1,ok,,0.9425,10.0
+automobile vs truck,automobile,truck,2,8,24,laplacian,large_mu,37,37,37,73,24,16937.836798527394,37788.010340622655,large_mu,disjoint_bag_coordinate_me_single_point_probe_v1,ok,,0.945,1.0
+automobile vs truck,automobile,truck,2,8,24,rbf,small_mu,37,37,36,73,24,21975.647892362707,49740.90081870736,large_mu,disjoint_bag_coordinate_me_single_point_probe_v1,ok,,0.95,1.0

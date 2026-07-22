@@ -1,0 +1,4 @@
+pair,rep,data_seed,split_seed,feature_dimension,class0_total,class1_total,class0_train,class1_train,class0_test,class1_test
+automobile vs truck,0,11,11,512,500,500,300,300,200,200
+automobile vs truck,1,11,108,512,500,500,300,300,200,200
+automobile vs truck,2,11,205,512,500,500,300,300,200,200

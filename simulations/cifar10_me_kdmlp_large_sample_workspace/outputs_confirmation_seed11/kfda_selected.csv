@@ -1,0 +1,4 @@
+pair,class0,class1,rep,r,acc,stage1_kernel
+automobile vs truck,automobile,truck,0,1,0.9275,polynomial
+automobile vs truck,automobile,truck,1,1,0.945,rbf
+automobile vs truck,automobile,truck,2,1,0.91,laplacian

@@ -1,0 +1,7 @@
+pair,class0,class1,rep,family,r,stage1_kernel,acc,probe_C
+automobile vs truck,automobile,truck,0,large_mu,24,laplacian,0.9325,0.1
+automobile vs truck,automobile,truck,0,small_mu,24,rbf,0.6425,0.1
+automobile vs truck,automobile,truck,1,large_mu,24,rbf,0.9425,1.0
+automobile vs truck,automobile,truck,1,small_mu,24,laplacian,0.715,0.1
+automobile vs truck,automobile,truck,2,large_mu,24,polynomial,0.94,10.0
+automobile vs truck,automobile,truck,2,small_mu,24,rbf,0.745,0.1

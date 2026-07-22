@@ -1,0 +1,3 @@
+pair,m,family,bags_per_class,largest_requested_r_supported,valid_requested_dimensions
+automobile vs truck,8,large_mu,37,24,1
+automobile vs truck,8,small_mu,37,24,1

@@ -1,0 +1,19 @@
+pair,rep,data_seed,split_seed,feature_dimension,class0_total,class1_total,class0_train,class1_train,class0_test,class1_test
+airplane vs bird,0,0,0,512,500,500,300,300,200,200
+airplane vs bird,1,0,97,512,500,500,300,300,200,200
+airplane vs bird,2,0,194,512,500,500,300,300,200,200
+airplane vs ship,0,0,0,512,500,500,300,300,200,200
+airplane vs ship,1,0,97,512,500,500,300,300,200,200
+airplane vs ship,2,0,194,512,500,500,300,300,200,200
+automobile vs truck,0,0,0,512,500,500,300,300,200,200
+automobile vs truck,1,0,97,512,500,500,300,300,200,200
+automobile vs truck,2,0,194,512,500,500,300,300,200,200
+cat vs dog,0,0,0,512,500,500,300,300,200,200
+cat vs dog,1,0,97,512,500,500,300,300,200,200
+cat vs dog,2,0,194,512,500,500,300,300,200,200
+deer vs horse,0,0,0,512,500,500,300,300,200,200
+deer vs horse,1,0,97,512,500,500,300,300,200,200
+deer vs horse,2,0,194,512,500,500,300,300,200,200
+ship vs truck,0,0,0,512,500,500,300,300,200,200
+ship vs truck,1,0,97,512,500,500,300,300,200,200
+ship vs truck,2,0,194,512,500,500,300,300,200,200

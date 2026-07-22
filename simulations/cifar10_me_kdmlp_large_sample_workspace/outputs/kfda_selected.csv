@@ -1,0 +1,19 @@
+pair,class0,class1,rep,r,acc,stage1_kernel
+airplane vs bird,airplane,bird,0,1,0.9375,polynomial
+airplane vs bird,airplane,bird,1,1,0.9375,rbf
+airplane vs bird,airplane,bird,2,1,0.965,sigmoid
+airplane vs ship,airplane,ship,0,1,0.87,laplacian
+airplane vs ship,airplane,ship,1,1,0.845,sigmoid
+airplane vs ship,airplane,ship,2,1,0.8925,laplacian
+automobile vs truck,automobile,truck,0,1,0.8825,laplacian
+automobile vs truck,automobile,truck,1,1,0.89,laplacian
+automobile vs truck,automobile,truck,2,1,0.9025,linear
+cat vs dog,cat,dog,0,1,0.785,polynomial
+cat vs dog,cat,dog,1,1,0.8075,rbf
+cat vs dog,cat,dog,2,1,0.8075,laplacian
+deer vs horse,deer,horse,0,1,0.7575,polynomial
+deer vs horse,deer,horse,1,1,0.76,polynomial
+deer vs horse,deer,horse,2,1,0.7625,polynomial
+ship vs truck,ship,truck,0,1,0.9475,laplacian
+ship vs truck,ship,truck,1,1,0.9575,sigmoid
+ship vs truck,ship,truck,2,1,0.9675,rbf
